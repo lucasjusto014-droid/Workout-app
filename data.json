@@ -425,6 +425,16 @@
       "adminAdjustment": 0,
       "upOffset": 0,
       "downOffset": 0
+    },
+    {
+      "name": "CJ",
+      "slug": "cj",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
     }
   ]
 }
