@@ -22,6 +22,7 @@ nav{display:flex;gap:3px}nav button,.navbtn{border:0;background:transparent;colo
 .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.btn{border:1px solid #32323a;background:#19191e;color:#fff;border-radius:10px;padding:9px 11px;font-weight:850;transition:.15s}.btn:hover{transform:translateY(-1px);border-color:#50505b}.btn.primary{background:var(--accent);border-color:var(--accent)}.btn.good{background:#15271b;border-color:#31563b;color:#88e4a7}.btn.bad{background:#2a1517;border-color:#613036;color:#ff9a9a}.btn.super{background:#201b0d;border-color:#665620;color:#f7d75d}.btn:disabled{opacity:.7;cursor:default;transform:none}.btn.small{font-size:12px;padding:8px 10px}
 .members{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.member{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px;text-align:center}.member .avatar{width:66px;height:66px;margin:0 auto 10px}.member h3{margin:0;font-size:16px}.member-actions{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:11px}
 .pvp-wrap{max-width:920px;margin:0 auto}.pvp-stage{display:grid;grid-template-columns:1fr 90px 1fr;gap:16px;align-items:stretch}.pvp-card{background:linear-gradient(180deg,#17171c,#101014);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:370px;box-shadow:0 12px 40px rgba(0,0,0,.2)}.pvp-card .avatar{width:128px;height:128px;border-radius:28px;font-size:30px;margin-bottom:16px}.pvp-card h3{font-size:27px;line-height:1.05;letter-spacing:-.045em;margin:0 0 6px}.pvp-card .pvp-stats{color:var(--muted);font-size:12px;margin-bottom:17px}.pvp-card .btn{width:100%;max-width:260px;padding:13px 16px;font-size:15px}.pvp-vs{display:grid;place-items:center;font-size:27px;font-weight:1000;color:#70707a;letter-spacing:-.05em}.pvp-bottom{text-align:center;margin-top:16px}.pvp-bottom .tag{margin-bottom:10px}.pvp-leaderboard{margin-top:28px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.pvp-leaderboard h3{margin:0 0 10px}.pvp-row{display:grid;grid-template-columns:42px 1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid #25252b;align-items:center}.pvp-row:last-child{border:0}.pvp-row strong:last-child{text-align:right}
+.admin-person{display:flex;align-items:center;gap:10px;min-width:0}.admin-person .avatar{width:52px;height:52px;min-width:52px;border-radius:12px}.admin-person-text{min-width:0}.admin-person-text strong,.admin-person-text span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bracket-coming{min-height:420px;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 50% 20%,#1b1b22,#101014 48%,#0b0b0e);border:1px solid var(--line);border-radius:20px;padding:30px}.bracket-coming .icon{font-size:64px;margin-bottom:10px}.bracket-coming h3{font-size:38px;letter-spacing:-.055em;margin:0 0 8px}.bracket-coming p{margin:0;color:var(--muted);font-size:15px}
 .admin-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.panel h3{margin:0 0 5px;font-size:20px}.admin-list{max-height:610px;overflow:auto;margin-top:12px}.admin-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #25252b}.admin-row:last-child{border:0}.admin-row strong{display:block}.admin-row span{color:var(--muted);font-size:12px}.admin-actions{display:flex;gap:6px}
 .modal,.screen{position:fixed;inset:0;z-index:80;background:rgba(3,3,5,.84);backdrop-filter:blur(7px);display:none;place-items:center;padding:20px}.modal.show,.screen.show{display:grid}.card{width:min(580px,100%);background:#121216;border:1px solid #34343c;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 5px;letter-spacing:-.04em}.card .sub{color:var(--muted);margin:0 0 18px}.formrow{margin:13px 0}.formrow label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}.error{color:#ff8a84;min-height:20px;font-size:12px;font-weight:800;margin-top:8px}
 .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#251516,#0a0a0d 40%,#070709);display:grid;place-items:center;padding:20px}.gate .card{width:min(620px,100%)}.gate-logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);font-size:24px;font-weight:1000;margin-bottom:16px}
@@ -58,6 +59,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
       <nav>
         <button class="active" data-view="rankings">Rankings</button>
         <button data-view="pvp">Doosh PvP</button>
+        <button data-view="bracket">Bracket</button>
         <button data-view="members">Members</button>
         <button id="adminTab" class="hidden" data-view="admin">Admin</button>
       </nav>
@@ -93,6 +95,17 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
           <h3>PvP Standings</h3>
           <div class="tag" style="margin-bottom:8px">All pledges ranked by head-to-head wins. Record shown as W–L.</div>
           <div id="pvpLeaders"><div class="tag">Play some matchups to load PvP stats.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="bracket" class="view">
+      <div class="section-head"><div><h2>Bracket</h2><p>PC tournament bracket.</p></div><div class="status">COMING SOON</div></div>
+      <div class="bracket-coming">
+        <div>
+          <div class="icon">🏆</div>
+          <h3>Coming Soon</h3>
+          <p>The PC Doosh Bracket is being built.</p>
         </div>
       </div>
     </section>
@@ -571,11 +584,11 @@ function renderAdminRoster(){
     const actualRank=active?order.findIndex(x=>x.slug===m.slug)+1:0;
     const manual=Number(m.rankOverride)||0;
     const scoreText=m.loaded?('rank #'+actualRank+' · score '+score(m)+(manual?' · forced #'+manual:'')):((manual?'forced #'+manual:'votes loading'));
-    return '<div class="admin-row"><div><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+'</span></div>'+
+    return '<div class="admin-row"><div class="admin-person"><div class="avatar">'+avatarHTML(m)+'</div><div class="admin-person-text"><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+(m.photo?' · photo loaded':' · NO PHOTO')+'</span></div></div>'+
       '<div class="admin-actions">'+
       '<button class="btn small" onclick="adminSetRank(\''+m.slug+'\')">Rank</button>'+
       '<button class="btn small" onclick="adminPhotoDirect(\''+m.slug+'\')">Photo</button>'+
-      (m.photo?'<button class="btn small" onclick="adminCrop(\''+m.slug+'\')">Crop</button>':'')+
+      (m.photo?'<button class="btn small" onclick="adminCrop(\''+m.slug+'\')">Crop</button>':'<button class="btn small bad" onclick="adminPhotoDirect(\''+m.slug+'\')">Add Photo</button>')+
       '<button class="btn small" onclick="adminRename(\''+m.slug+'\')">Name</button>'+
       '<button class="btn small" onclick="adminResetVotes(\''+m.slug+'\')">Reset Votes</button>'+
       (active?'<button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button>':'<button class="btn small good" onclick="adminRestore(\''+m.slug+'\')">Restore</button>')+
