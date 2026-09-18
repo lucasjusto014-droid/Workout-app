@@ -124,7 +124,10 @@
       "name": "Athen Karas",
       "slug": "athen-karas",
       "active": true,
-      "photo": "photos/athen-karas.jpg?v=1789767760428"
+      "photo": "photos/athen-karas.jpg?v=1789767760428",
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Matias Espina",
