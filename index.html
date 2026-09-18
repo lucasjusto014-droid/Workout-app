@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b0b0c" />
-  <title>Douche Rankings</title>
-  <meta name="description" content="The unofficial pledge class douche rankings." />
+  <title>Doosh Rankings</title>
+  <meta name="description" content="The unofficial pledge class doosh rankings." />
   <style>
     :root{
       --bg:#09090b;--panel:#121216;--panel2:#18181d;--line:#28282f;
@@ -79,10 +79,10 @@
   </style>
 </head>
 <body>
-  <div class="ticker"><span>⚠ UNOFFICIAL PLEDGE CLASS RANKINGS &nbsp; • &nbsp; VOTE RESPONSIBLY &nbsp; • &nbsp; NO ANONYMOUS COMMENTS &nbsp; • &nbsp; DOUCHE OF THE WEEK LOADING &nbsp; • &nbsp; </span></div>
+  <div class="ticker"><span>⚠ UNOFFICIAL PLEDGE CLASS RANKINGS &nbsp; • &nbsp; VOTE RESPONSIBLY &nbsp; • &nbsp; NO ANONYMOUS COMMENTS &nbsp; • &nbsp; DOOSH OF THE WEEK LOADING &nbsp; • &nbsp; </span></div>
   <header>
     <div class="wrap nav">
-      <div class="brand"><div class="brandmark">D</div> DOUCHE RANKINGS</div>
+      <div class="brand"><div class="brandmark">D</div> DOOSH RANKINGS</div>
       <nav>
         <button class="active" data-view="rankings">Rankings</button>
         <button data-view="battle">Battle</button>
@@ -96,7 +96,7 @@
     <div class="hero">
       <div class="eyebrow">● Live pledge-class leaderboard</div>
       <h1>DOUCHE<br><span class="red">RANKINGS</span></h1>
-      <p>The completely unofficial ranking of who is moving up, falling off, and achieving generational douche status.</p>
+      <p>The completely unofficial ranking of who is moving up, falling off, and achieving generational doosh status.</p>
       <div class="hero-actions">
         <button class="btn primary" onclick="go('battle')">Start a Battle</button>
         <button class="btn" onclick="go('rankings')">View Rankings</button>
@@ -118,7 +118,7 @@
     </section>
 
     <section id="battle" class="view">
-      <div class="section-head"><div><h2>Douche Battle</h2><p>Pick the bigger douche. Winner gains rating.</p></div></div>
+      <div class="section-head"><div><h2>Doosh Battle</h2><p>Pick the bigger doosh. Winner gains rating.</p></div></div>
       <div class="battle-shell">
         <div class="battle-grid">
           <div class="fighter" id="fighterA"></div>
@@ -140,7 +140,7 @@
     </section>
   </main>
 
-  <div class="foot">Douche Rankings is an unofficial joke ranking site. Keep profiles consensual and don’t post private information.</div>
+  <div class="foot">Doosh Rankings is an unofficial joke ranking site. Keep profiles consensual and don’t post private information.</div>
   <div class="toast" id="toast"></div>
 
 <script>
@@ -148,7 +148,7 @@ const baseMembers = [
   {id:1,name:'Pledge 01',nick:'Professional Liability',rating:1247,delta:2},
   {id:2,name:'Pledge 02',nick:'The Menace',rating:1210,delta:1},
   {id:3,name:'Pledge 03',nick:'Unforced Error Specialist',rating:1176,delta:4},
-  {id:4,name:'Pledge 04',nick:'Executive Douche',rating:1158,delta:0},
+  {id:4,name:'Pledge 04',nick:'Executive Doosh',rating:1158,delta:0},
   {id:5,name:'Pledge 05',nick:'Bad Decision Merchant',rating:1132,delta:-1},
   {id:6,name:'Pledge 06',nick:'Aura Debt Collector',rating:1104,delta:2},
   {id:7,name:'Pledge 07',nick:'Public Nuisance',rating:1085,delta:0},
@@ -158,17 +158,17 @@ const baseMembers = [
   {id:11,name:'Pledge 11',nick:'Part-Time Menace',rating:995,delta:0},
   {id:12,name:'Pledge 12',nick:'Under Investigation',rating:972,delta:-1},
 ];
-const stored = JSON.parse(localStorage.getItem('douche-rankings-v1') || 'null');
+const stored = JSON.parse(localStorage.getItem('doosh-rankings-v1') || 'null');
 let members = stored?.members || baseMembers;
 let battles = stored?.battles || 0;
 let quickVotes = stored?.quickVotes || {};
 let pair = [];
 let voteTarget = null;
 
-function save(){localStorage.setItem('douche-rankings-v1',JSON.stringify({members,battles,quickVotes}))}
+function save(){localStorage.setItem('doosh-rankings-v1',JSON.stringify({members,battles,quickVotes}))}
 function initials(m){return 'P'+String(m.id).padStart(2,'0')}
 function deltaHTML(d){if(d>0)return '<span class="up">▲ +'+d+'</span>';if(d<0)return '<span class="down">▼ '+d+'</span>';return '<span class="flat">—</span>'}
-function rankLabel(r){if(r>=1225)return 'Generational Douche';if(r>=1150)return 'Elite Douche';if(r>=1080)return 'Certified Douche';if(r>=1020)return 'Tool';return 'Civilian';}
+function rankLabel(r){if(r>=1225)return 'Generational Doosh';if(r>=1150)return 'Elite Doosh';if(r>=1080)return 'Certified Doosh';if(r>=1020)return 'Tool';return 'Civilian';}
 function renderRankings(){
   members.sort((a,b)=>b.rating-a.rating);
   document.getElementById('rankingList').innerHTML = members.map((m,i)=>`
@@ -189,7 +189,7 @@ function renderBattle(){
   pair.forEach((m,i)=>{
     document.getElementById(i===0?'fighterA':'fighterB').innerHTML=`
       <div class="bigavatar">${initials(m)}</div><h3>${m.name}</h3><p>${m.nick}</p>
-      <button class="btn primary" onclick="pick(${m.id})">Bigger Douche</button>`;
+      <button class="btn primary" onclick="pick(${m.id})">Bigger Doosh</button>`;
   });
 }
 function pick(id){
@@ -203,7 +203,7 @@ function newVote(){
   const v=quickVotes[voteTarget.id]||{yes:0,no:0};
   document.getElementById('voteCard').innerHTML=`
     <div class="bigavatar">${initials(voteTarget)}</div><h3>${voteTarget.name}</h3><p>${voteTarget.nick}</p>
-    <h4>Certified douche?</h4>
+    <h4>Certified doosh?</h4>
     <div class="vote-actions"><button class="btn primary" onclick="quickVote(true)">Absolutely</button><button class="btn" onclick="quickVote(false)">Not today</button></div>
     <div class="battle-note">Your device: ${v.yes} yes · ${v.no} no</div>`;
 }
