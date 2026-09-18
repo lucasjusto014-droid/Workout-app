@@ -114,7 +114,14 @@
       "name": "Finn Scherer",
       "slug": "finn-scherer",
       "active": true,
-      "photo": "photos/finn-scherer.jpg?v=1789767745024"
+      "photo": "photos/cropped/finn-scherer.jpg?v=1789769880216",
+      "photoOriginal": "photos/finn-scherer.jpg?v=1789767745024",
+      "cropX": 44,
+      "cropY": 33,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Marco Alberni",
