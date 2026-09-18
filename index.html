@@ -1,150 +1,339 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b0b0c" />
-  <title>Doosh Rankings</title>
-  <meta name="description" content="The unofficial pledge class Doosh Rankings." />
-  <style>
-    :root{--bg:#09090b;--panel:#121216;--line:#28282f;--text:#f5f5f7;--muted:#9999a3;--accent:#ff3b30;--gold:#f4c542;--green:#35c76f;--shadow:0 16px 50px rgba(0,0,0,.35)}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}
-    body{margin:0;background:radial-gradient(circle at top,#18181d 0,#0b0b0e 34%,#08080a 100%);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
-    button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}.wrap{width:min(1120px,calc(100% - 28px));margin:auto}
-    .ticker{overflow:hidden;border-bottom:1px solid #2a1615;background:#180c0b;color:#ffc8c4;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-    .ticker span{display:inline-block;padding:9px 0;animation:ticker 28s linear infinite}@keyframes ticker{from{transform:translateX(30vw)}to{transform:translateX(-100%)}}
-    header{position:sticky;top:0;z-index:20;background:rgba(9,9,11,.84);backdrop-filter:blur(15px);border-bottom:1px solid rgba(255,255,255,.07)}
-    .nav{height:68px;display:flex;align-items:center;gap:20px}.brand{display:flex;align-items:center;gap:11px;font-weight:1000;letter-spacing:-.04em;font-size:21px;margin-right:auto}
-    .brandmark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);box-shadow:0 8px 24px rgba(255,59,48,.22);font-size:18px}
-    nav{display:flex;gap:4px}nav button,.lockbtn{border:0;color:#bdbdc4;background:transparent;padding:9px 12px;border-radius:9px;font-weight:750}
-    nav button:hover,nav button.active,.lockbtn:hover{color:white;background:#1d1d22}
-    .hero{padding:64px 0 30px;text-align:center}.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid #3b2422;background:#1b1110;border-radius:999px;color:#ff938d;font-weight:850;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-    h1{font-size:clamp(50px,9vw,96px);line-height:.9;margin:20px 0 18px;letter-spacing:-.075em}h1 .red{color:var(--accent)}.hero p{max-width:650px;margin:0 auto;color:#aaaab3;font-size:17px}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px auto 40px;max-width:780px}.stat{background:rgba(18,18,22,.86);border:1px solid var(--line);border-radius:15px;padding:15px}.stat strong{display:block;font-size:23px;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:12px;text-transform:uppercase;font-weight:800;letter-spacing:.08em}
-    section.view{display:none;padding:0 0 80px}.view.active{display:block}.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:0 0 18px}.section-head h2{margin:0;font-size:31px;letter-spacing:-.045em}.section-head p{margin:3px 0 0;color:var(--muted)}
-    .status{font-size:12px;border:1px solid #294532;color:#76e09b;background:#101a13;border-radius:999px;padding:6px 9px;font-weight:800}.toolbar{display:flex;gap:10px;margin:0 0 14px}.search{flex:1;background:#111115;border:1px solid var(--line);color:#fff;border-radius:12px;padding:12px 14px;outline:none}.search:focus{border-color:#575761}
-    .rank-card{display:grid;grid-template-columns:58px 54px 1fr auto auto;align-items:center;gap:13px;background:linear-gradient(180deg,#151519,#111115);border:1px solid var(--line);padding:12px 14px;margin:8px 0;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.1)}.rank-card.top{border-color:#51471d;background:linear-gradient(180deg,#1d1a10,#121114)}
-    .rank-num{font-weight:1000;font-size:24px;color:#c8c8ce;letter-spacing:-.05em}.top .rank-num{color:var(--gold)}.avatar{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-weight:1000;font-size:14px;background:linear-gradient(135deg,#30303a,#17171c);border:1px solid #3b3b44;overflow:hidden}.person h3{margin:0;font-size:16px}.tag{color:#8f8f99;font-size:12px;margin-top:2px}.votes{text-align:right;min-width:74px}.votes strong{display:block;font-size:19px}.votes small{color:var(--muted)}
-    .btn{border:1px solid #303038;background:#18181d;color:#fff;border-radius:11px;padding:10px 13px;font-weight:850;transition:.18s}.btn:hover{transform:translateY(-1px);border-color:#464650}.btn.primary{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 10px 28px rgba(255,59,48,.14)}.btn.upvoted{background:#1c2d22;border-color:#335d40;color:#8be5a9}.btn:disabled{cursor:default;opacity:.72;transform:none}.photo-btn{padding:9px 11px;font-size:12px}
-    .members{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.member{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}.member .avatar{margin:0 auto 12px;width:66px;height:66px}.member h3{margin:0;font-size:16px}.member-actions{display:flex;gap:8px;justify-content:center;margin-top:12px}
-    .foot{border-top:1px solid var(--line);padding:26px 0 42px;color:#767680;font-size:12px;text-align:center}.foot a{color:#9999a3}.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;padding:10px 14px;border-radius:10px;transition:.2s;z-index:80;box-shadow:var(--shadow);max-width:min(520px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
-    .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#231516,#0a0a0d 38%,#070709);display:grid;place-items:center;padding:22px}.gate-card{width:min(620px,100%);background:rgba(18,18,22,.95);border:1px solid #303038;border-radius:22px;padding:28px;box-shadow:0 28px 90px rgba(0,0,0,.55)}.gate-logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,#ff6b61,#b70d09);display:grid;place-items:center;font-size:25px;font-weight:1000;margin-bottom:18px}.gate h2{font-size:32px;letter-spacing:-.05em;margin:0 0 5px}.gate .sub{color:var(--muted);margin:0 0 22px}.q{margin:14px 0}.q label{display:block;font-size:13px;font-weight:850;margin-bottom:7px}.q input{width:100%;border:1px solid #34343c;background:#0e0e12;color:#fff;padding:12px 13px;border-radius:11px;outline:none}.q input:focus{border-color:#6a3a38}.gate-error{min-height:21px;color:#ff817b;font-weight:750;font-size:13px;margin-top:8px}.gate-note{color:#777783;font-size:11px;margin-top:14px}
-    .modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.72);display:none;place-items:center;padding:18px}.modal.show{display:grid}.modal-card{width:min(560px,100%);background:#121216;border:1px solid #303038;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.modal-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}.modal-head h3{margin:0;font-size:23px;letter-spacing:-.035em}.modal-head button{margin-left:auto}.dropzone{border:1.5px dashed #45454f;border-radius:15px;padding:28px 18px;text-align:center;color:#a5a5ae;background:#0d0d10;transition:.18s}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff;margin-bottom:4px}.preview{display:none;margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:10px;gap:10px;align-items:center}.preview.show{display:flex}.preview img{width:64px;height:64px;object-fit:cover;border-radius:10px}.preview-info{min-width:0}.preview-info strong,.preview-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.preview-info span{color:var(--muted);font-size:12px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.modal-note{font-size:12px;color:#898993;margin-top:12px;line-height:1.45}
-    @media(max-width:820px){.rank-card{grid-template-columns:44px 48px 1fr auto}.rank-card .actions{grid-column:3/5;justify-self:stretch}.members{grid-template-columns:1fr 1fr}}
-    @media(max-width:720px){.nav{height:auto;padding:12px 0;display:block}.brand{margin-bottom:10px}.nav nav{overflow:auto;padding-bottom:2px}.lockbtn{position:absolute;right:14px;top:13px}.hero{padding-top:48px}.stats{grid-template-columns:1fr}}
-    @media(max-width:500px){.rank-card{grid-template-columns:38px 44px 1fr auto;gap:8px;padding:10px}.rank-num{font-size:20px}.avatar{width:42px;height:42px}.votes{min-width:54px}.votes small{display:none}.rank-card .actions{grid-column:3/5}.members{grid-template-columns:1fr}.gate-card{padding:20px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b0c">
+<title>PC Doosh Rankings</title>
+<meta name="description" content="The unofficial PC Doosh Rankings.">
+<style>
+:root{--bg:#09090b;--panel:#121216;--panel2:#18181d;--line:#2b2b32;--text:#f6f6f8;--muted:#9999a3;--accent:#ff3b30;--gold:#f4c542;--green:#35c76f;--blue:#5fa8ff;--shadow:0 18px 60px rgba(0,0,0,.42)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#1b1b20,#0a0a0d 34%,#070709);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}.wrap{width:min(1160px,calc(100% - 28px));margin:auto}
+.ticker{overflow:hidden;border-bottom:1px solid #2a1615;background:#180c0b;color:#ffc8c4;font-weight:900;font-size:11px;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}.ticker span{display:inline-block;padding:8px 0;animation:ticker 28s linear infinite}@keyframes ticker{from{transform:translateX(25vw)}to{transform:translateX(-100%)}}
+header{position:sticky;top:0;z-index:30;background:rgba(9,9,11,.86);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07)}.nav{min-height:68px;display:flex;align-items:center;gap:16px}.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:1000;letter-spacing:-.04em;margin-right:auto}.brandmark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);font-weight:1000;box-shadow:0 8px 24px rgba(255,59,48,.2)}
+nav{display:flex;gap:3px}nav button,.navbtn{border:0;background:transparent;color:#bdbdc4;padding:9px 11px;border-radius:9px;font-weight:800}nav button:hover,nav button.active,.navbtn:hover{color:#fff;background:#1d1d22}.who{color:#888893;font-size:12px;font-weight:800;white-space:nowrap}
+.hero{padding:58px 0 28px;text-align:center}.eyebrow{display:inline-flex;padding:7px 11px;border:1px solid #3b2422;background:#1b1110;border-radius:999px;color:#ff938d;font-weight:900;font-size:11px;letter-spacing:.08em;text-transform:uppercase}h1{font-size:clamp(52px,9vw,96px);line-height:.88;letter-spacing:-.075em;margin:18px 0}.red{color:var(--accent)}.hero p{max-width:680px;margin:auto;color:#aaaab3;font-size:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:820px;margin:24px auto 42px}.stat{background:rgba(18,18,22,.9);border:1px solid var(--line);border-radius:15px;padding:15px}.stat strong{display:block;font-size:22px;letter-spacing:-.035em}.stat span{color:var(--muted);font-size:11px;text-transform:uppercase;font-weight:900;letter-spacing:.08em}
+.view{display:none;padding-bottom:80px}.view.active{display:block}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:15px}.section-head h2{font-size:31px;letter-spacing:-.045em;margin:0}.section-head p{margin:3px 0 0;color:var(--muted)}.status{font-size:11px;border:1px solid #294532;background:#101a13;color:#76e09b;border-radius:999px;padding:6px 9px;font-weight:900}
+.toolbar{display:flex;gap:9px;margin-bottom:13px}.field,.search{width:100%;background:#0f0f13;border:1px solid #33333b;color:#fff;border-radius:11px;padding:11px 12px;outline:none}.field:focus,.search:focus{border-color:#666671}
+.rank-card{display:grid;grid-template-columns:56px 54px 1fr auto auto;align-items:center;gap:12px;background:linear-gradient(180deg,#151519,#101014);border:1px solid var(--line);border-radius:15px;padding:11px 13px;margin:8px 0}.rank-card.top{border-color:#54491d;background:linear-gradient(180deg,#1b180f,#111014)}.ranknum{font-size:23px;font-weight:1000;color:#c7c7cd;letter-spacing:-.05em}.top .ranknum{color:var(--gold)}
+.avatar{width:50px;height:50px;display:grid;place-items:center;border-radius:13px;overflow:hidden;background:linear-gradient(135deg,#30303a,#17171c);border:1px solid #3b3b44;font-size:13px;font-weight:1000}.avatar img{width:100%;height:100%;object-fit:cover}.person h3{margin:0;font-size:16px}.tag{color:#8e8e98;font-size:12px;margin-top:2px}.score{text-align:right;min-width:82px}.score strong{display:block;font-size:19px}.score small{color:var(--muted)}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.btn{border:1px solid #32323a;background:#19191e;color:#fff;border-radius:10px;padding:9px 11px;font-weight:850;transition:.15s}.btn:hover{transform:translateY(-1px);border-color:#50505b}.btn.primary{background:var(--accent);border-color:var(--accent)}.btn.good{background:#15271b;border-color:#31563b;color:#88e4a7}.btn.bad{background:#2a1517;border-color:#613036;color:#ff9a9a}.btn.super{background:#201b0d;border-color:#665620;color:#f7d75d}.btn:disabled{opacity:.7;cursor:default;transform:none}.btn.small{font-size:12px;padding:8px 10px}
+.members{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.member{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px;text-align:center}.member .avatar{width:66px;height:66px;margin:0 auto 10px}.member h3{margin:0;font-size:16px}.member-actions{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:11px}
+.admin-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.panel h3{margin:0 0 5px;font-size:20px}.admin-list{max-height:610px;overflow:auto;margin-top:12px}.admin-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #25252b}.admin-row:last-child{border:0}.admin-row strong{display:block}.admin-row span{color:var(--muted);font-size:12px}.admin-actions{display:flex;gap:6px}
+.modal,.screen{position:fixed;inset:0;z-index:80;background:rgba(3,3,5,.84);backdrop-filter:blur(7px);display:none;place-items:center;padding:20px}.modal.show,.screen.show{display:grid}.card{width:min(580px,100%);background:#121216;border:1px solid #34343c;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 5px;letter-spacing:-.04em}.card .sub{color:var(--muted);margin:0 0 18px}.formrow{margin:13px 0}.formrow label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}.error{color:#ff8a84;min-height:20px;font-size:12px;font-weight:800;margin-top:8px}
+.gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#251516,#0a0a0d 40%,#070709);display:grid;place-items:center;padding:20px}.gate .card{width:min(620px,100%)}.gate-logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);font-size:24px;font-weight:1000;margin-bottom:16px}
+.dropzone{border:1.5px dashed #474751;border-radius:14px;padding:26px;text-align:center;background:#0d0d10;color:#aaaab4}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff}.preview{display:none;gap:10px;align-items:center;margin-top:12px;border:1px solid var(--line);padding:10px;border-radius:12px}.preview.show{display:flex}.preview img{width:62px;height:62px;object-fit:cover;border-radius:9px}.preview span{display:block;color:var(--muted);font-size:12px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.note{color:#888893;font-size:11px;margin-top:12px}.toast{position:fixed;left:50%;bottom:20px;z-index:120;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;border-radius:10px;padding:10px 14px;box-shadow:var(--shadow);transition:.2s;max-width:min(520px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;color:#767680;font-size:11px}
+@media(max-width:880px){.rank-card{grid-template-columns:44px 48px 1fr auto}.rank-card .actions{grid-column:3/5}.members{grid-template-columns:1fr 1fr}.admin-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.nav{display:block;padding:11px 0}.brand{margin-bottom:9px}.nav nav{overflow:auto}.who{position:absolute;right:14px;top:18px}.nav>.navbtn{margin-top:7px}.stats{grid-template-columns:1fr}.hero{padding-top:45px}}
+@media(max-width:500px){.members{grid-template-columns:1fr}.rank-card{grid-template-columns:36px 42px 1fr auto;gap:7px;padding:9px}.avatar{width:41px;height:41px}.ranknum{font-size:19px}.score{min-width:58px}.score small{display:none}.rank-card .actions{grid-column:3/5}.card{padding:18px}}
+</style>
 </head>
 <body>
-  <div id="gate" class="gate">
-    <div class="gate-card">
-      <div class="gate-logo">D</div>
-      <h2>Dooshers only.</h2>
-      <p class="sub">Answer all three questions to enter Doosh Rankings.</p>
-      <form id="gateForm">
-        <div class="q"><label for="q1">Who MKs favorite brother?</label><input id="q1" autocomplete="off" required /></div>
-        <div class="q"><label for="q2">Who is PCP</label><input id="q2" autocomplete="off" required /></div>
-        <div class="q"><label for="q3">What is the official name of the dooshers</label><input id="q3" autocomplete="off" required /></div>
-        <button class="btn primary" style="width:100%;margin-top:6px" type="submit">Enter Rankings</button>
-        <div id="gateError" class="gate-error"></div>
-      </form>
-      <div class="gate-note">Answers are not case sensitive.</div>
-    </div>
+<div id="gate" class="gate">
+  <div class="card">
+    <div class="gate-logo">PC</div>
+    <h2>PC Doosh Rankings</h2>
+    <p class="sub">Answer all three to get in. Answers aren't case sensitive.</p>
+    <form id="gateForm">
+      <div class="formrow"><label>Who MKs favorite brother?</label><input id="q1" class="field" autocomplete="off" required></div>
+      <div class="formrow"><label>Who is PCP</label><input id="q2" class="field" autocomplete="off" required></div>
+      <div class="formrow"><label>What is the official name of the dooshers</label><input id="q3" class="field" autocomplete="off" required></div>
+      <button class="btn primary" style="width:100%" type="submit">Continue</button>
+      <div id="gateError" class="error"></div>
+    </form>
   </div>
+</div>
 
-  <div id="app" class="hidden">
-    <div class="ticker"><span>⚠ UNOFFICIAL PLEDGE CLASS RANKINGS &nbsp; • &nbsp; UPVOTE THE BIGGEST DOOSH &nbsp; • &nbsp; 69 DOOSHERS IN THE FIELD &nbsp; • &nbsp; PHOTO REQUESTS OPEN &nbsp; • &nbsp;</span></div>
-    <header>
-      <div class="wrap nav">
-        <div class="brand"><div class="brandmark">D</div> DOOSH RANKINGS</div>
-        <nav><button class="active" data-view="rankings">Rankings</button><button data-view="members">Members</button></nav>
-        <button class="lockbtn" id="lockBtn">Lock</button>
-      </div>
-    </header>
-    <main class="wrap">
-      <div class="hero"><div class="eyebrow">● Live shared leaderboard</div><h1>DOOSH<br><span class="red">RANKINGS</span></h1><p>One leaderboard. Sixty-nine pledges. Rankings are decided by upvotes.</p></div>
-      <div class="stats">
-        <div class="stat"><strong id="memberCount">69</strong><span>Dooshers ranked</span></div>
-        <div class="stat"><strong id="totalVotes">—</strong><span>Total upvotes</span></div>
-        <div class="stat"><strong id="leaderName">Loading…</strong><span>Current #1</span></div>
-      </div>
-      <section id="rankings" class="view active">
-        <div class="section-head"><div><h2>Official Rankings</h2><p>Highest upvote count takes the top spot.</p></div><div class="status">● LIVE</div></div>
-        <div class="toolbar"><input class="search" id="rankSearch" placeholder="Search a doosher…" /></div>
-        <div id="rankingList"></div>
-      </section>
-      <section id="members" class="view">
-        <div class="section-head"><div><h2>Pledge Class</h2><p>All 69 names from the roster.</p></div></div>
-        <div class="toolbar"><input class="search" id="memberSearch" placeholder="Search members…" /></div>
-        <div class="members" id="memberGrid"></div>
-      </section>
-    </main>
-    <div class="foot">Doosh Rankings is an unofficial joke ranking site. Shared vote counts are powered by <a href="https://counterapi.com/" target="_blank" rel="noopener">CounterAPI</a>.</div>
+<div id="signinScreen" class="screen">
+  <div class="card">
+    <div class="gate-logo">PC</div>
+    <h2>Sign in to the PC</h2>
+    <p class="sub">Pick your name. This keeps each person's votes separate and lets the admin see which roster names have signed in.</p>
+    <div class="formrow"><label>Your name</label><select id="signinSelect" class="field"></select></div>
+    <button id="signinBtn" class="btn primary" style="width:100%">Sign in</button>
+    <div class="note">This is an informal roster sign-in, not identity verification. Don't sign in as someone else.</div>
   </div>
+</div>
 
-  <div id="photoModal" class="modal">
-    <div class="modal-card">
-      <div class="modal-head"><div><div style="color:#8f8f99;font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.07em">Photo request</div><h3 id="photoTitle">Request a photo</h3></div><button class="btn" id="closePhoto" type="button">✕</button></div>
-      <input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" class="hidden" />
-      <div id="dropzone" class="dropzone" tabindex="0"><strong>Drop an image here</strong>or click to choose a file</div>
-      <div id="preview" class="preview"><img id="previewImg" alt="" /><div class="preview-info"><strong id="fileName"></strong><span id="fileMeta"></span></div></div>
-      <div class="modal-note">Submitting opens a GitHub photo-request ticket. When your browser supports it, the image is copied to your clipboard so you can paste it straight into the ticket.</div>
-      <div class="modal-actions"><button class="btn" id="cancelPhoto" type="button">Cancel</button><button class="btn primary" id="submitPhoto" type="button">Continue Request</button></div>
+<div id="app" class="hidden">
+  <div class="ticker"><span>PC DOOSH RANKINGS • UPVOTE • DOWNVOTE • SUPER UPVOTE REQUESTS • PHOTO REQUESTS • PC DOOSH RANKINGS •</span></div>
+  <header>
+    <div class="wrap nav">
+      <div class="brand"><div class="brandmark">PC</div> PC DOOSH RANKINGS</div>
+      <nav>
+        <button class="active" data-view="rankings">Rankings</button>
+        <button data-view="members">Members</button>
+        <button id="adminTab" class="hidden" data-view="admin">Admin</button>
+      </nav>
+      <span id="who" class="who"></span>
+      <button id="adminBtn" class="navbtn">Master</button>
+      <button id="signoutBtn" class="navbtn">Sign out</button>
     </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero"><div class="eyebrow">● PC leaderboard</div><h1>PC DOOSH<br><span class="red">RANKINGS</span></h1><p>Shared upvotes and downvotes decide the leaderboard. Super upvotes are requests that go to the admin for review.</p></div>
+    <div class="stats">
+      <div class="stat"><strong id="memberCount">—</strong><span>Active pledges</span></div>
+      <div class="stat"><strong id="reactionCount">—</strong><span>Total reactions</span></div>
+      <div class="stat"><strong id="leaderName">Loading…</strong><span>Current #1</span></div>
+    </div>
+
+    <section id="rankings" class="view active">
+      <div class="section-head"><div><h2>Official Rankings</h2><p>Score = upvotes − downvotes.</p></div><div class="status">● LIVE</div></div>
+      <div class="toolbar"><input id="rankSearch" class="search" placeholder="Search a pledge…"></div>
+      <div id="rankingList"></div>
+    </section>
+
+    <section id="members" class="view">
+      <div class="section-head"><div><h2>Pledge Class</h2><p>Active PC roster.</p></div></div>
+      <div class="toolbar"><input id="memberSearch" class="search" placeholder="Search members…"></div>
+      <div id="memberGrid" class="members"></div>
+    </section>
+
+    <section id="admin" class="view">
+      <div class="section-head"><div><h2>Master Admin</h2><p>Owner-only controls and sign-in activity.</p></div><div class="status">MASTER</div></div>
+      <div class="admin-grid">
+        <div class="panel">
+          <h3>Signed in</h3><div class="tag">Roster names that have used the sign-in screen on at least one browser.</div>
+          <button id="refreshSignins" class="btn small" style="margin-top:10px">Refresh</button>
+          <div id="signinList" class="admin-list"></div>
+        </div>
+        <div class="panel">
+          <h3>Roster controls</h3><div class="tag">Photo/delete commands only apply if the GitHub issue is submitted from your repository-owner account.</div>
+          <div style="margin-top:10px"><button id="openSuperRequests" class="btn super small">Open Super Upvote Requests</button></div>
+          <div id="adminRoster" class="admin-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>Unofficial joke ranking site. Keep requests about the ranking; don't post private info, threats, or anonymous accusations.</footer>
+</div>
+
+<div id="adminModal" class="modal">
+  <div class="card">
+    <h3>Master login</h3><p class="sub">Enter the master key.</p>
+    <input id="adminKey" type="password" class="field" autocomplete="off" placeholder="Master key">
+    <div id="adminError" class="error"></div>
+    <div class="modal-actions"><button id="cancelAdmin" class="btn">Cancel</button><button id="submitAdmin" class="btn primary">Unlock</button></div>
   </div>
-  <div class="toast" id="toast"></div>
+</div>
+
+<div id="photoModal" class="modal">
+  <div class="card">
+    <h3 id="photoTitle">Photo request</h3><p class="sub">Drop a picture. You'll review it in a GitHub request before submitting.</p>
+    <input id="photoInput" class="hidden" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif">
+    <div id="dropzone" class="dropzone" tabindex="0"><strong>Drop an image here</strong>or click to choose a file</div>
+    <div id="preview" class="preview"><img id="previewImg" alt=""><div><strong id="fileName"></strong><span id="fileMeta"></span></div></div>
+    <div class="modal-actions"><button id="cancelPhoto" class="btn">Cancel</button><button id="submitPhoto" class="btn primary">Continue Request</button></div>
+  </div>
+</div>
+
+<div id="superModal" class="modal">
+  <div class="card">
+    <h3 id="superTitle">Super Upvote Request</h3><p class="sub">Explain why this pledge should be higher. This does not automatically change the score.</p>
+    <textarea id="superReason" class="field" rows="6" placeholder="Why should they get a super upvote?"></textarea>
+    <div id="superError" class="error"></div>
+    <div class="modal-actions"><button id="cancelSuper" class="btn">Cancel</button><button id="submitSuper" class="btn super">Send Request</button></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
-const rosterNames = ["JJ Livingston","Tyler","Connor colon","Nolan Hart","Jackson Gerardi","Jacob Webb","Brooks Belisle","Cole Kaplan","Harrison Satre","Jake wells","Alex Batista","Ethan Follick","Gavin Streit","Josh Krief","Ryan Tully","Taryn Nachtrieb","Easton Schnall","Dylan Stiles","Andrew Colosimo","Jackson Crowley","Finn Scherer","Karsten Richey","Marco Alberni","Connor Jones","Emiliano Sierra","Athen Karas","Matias","Gabe Detraux","Graham Resavage","Corey Shook","Drew Geyer","Evan Jung","Jaden Judd","Sehej Mehta","Adrian Fonseca","Jordan cross","Carson Long","Louis DiStefano","Spencer kern","Ryan Erwin","Alejandro Menendez","Dawson Ivan","Evan kass","Juan Velazco","Lucas Justo","maksym zherukha","Ryan Baxley","Carter Jaye","Seb Russell","Crew Gibson","Gavin Tedesco","Richard Burke","Noah Marsh","Mike Rinaldi","Ethan Coffina","Enrique Macias","Jacob Law","Dylan Vertesch","Sebastian Betancourt","Theo Jauregui","Sean Vasquez","Andrew Loebig","Jackson Sadler","Carson Satin","Greyson Sanders","Lucas Franchak","Kai Gordon","Lucas","Grant Kessler"];
-const members = rosterNames.map(function(name,index){return{id:index+1,name:name,slug:name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''),votes:0,loaded:false}});
-const COUNTER_NS='doosh-rankings-pikapp-26-v1';
-const VOTED_KEY='doosh-upvotes-v2';
-let voted=new Set(JSON.parse(localStorage.getItem(VOTED_KEY)||'[]'));
-let selectedMember=null,selectedFile=null;
-
-const allowedHashes={
-  q1:['3b2e41f89cf44ea23ed00f68cb33ff83893a84ec6f654bc809836a091cb77d65'],
-  q2:['72831924521887e6638e686d6d004cd6cefe48168d2d4e2c40d29115b9c611b9','ff06535ac1029cca2fc2b86ac7355a7b4e0b8d839fc76b51d30833f4e1347ddc','df54bf6ad645652f9ad233962de4f9579df523872e2086a8cb2429612f3468ae','dac5be67dba88500ea1138a8b4052f201c2b799195eb10d91ac1771633d4c9ab'],
-  q3:['c821004cda28794b11dd685ad491826ec7622686b69a5171d005aa1581827f31','596328ec7d63edae06a1b335f73139adcc743b93be8f95e243ef0d56fc58c447','b1653105a60cb9542c727f0a735902004764602df4ac6886383a3f1ec61c35cc']
+const REPO='lucasjusto014-droid/Workout-app';
+const COUNTER_NS='pc-doosh-rankings-v2';
+const ADMIN_HASH='ef4cc952dfbb29be535112b1d67ac109b5de893e6ea1333d55e047a9534d140e';
+const ACCESS_HASHES={
+ q1:['3b2e41f89cf44ea23ed00f68cb33ff83893a84ec6f654bc809836a091cb77d65'],
+ q2:['72831924521887e6638e686d6d004cd6cefe48168d2d4e2c40d29115b9c611b9','ff06535ac1029cca2fc2b86ac7355a7b4e0b8d839fc76b51d30833f4e1347ddc','df54bf6ad645652f9ad233962de4f9579df523872e2086a8cb2429612f3468ae','dac5be67dba88500ea1138a8b4052f201c2b799195eb10d91ac1771633d4c9ab'],
+ q3:['c821004cda28794b11dd685ad491826ec7622686b69a5171d005aa1581827f31','596328ec7d63edae06a1b335f73139adcc743b93be8f95e243ef0d56fc58c447','b1653105a60cb9542c727f0a735902004764602df4ac6886383a3f1ec61c35cc']
 };
-function normalizeAnswer(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
-async function sha256(v){const data=new TextEncoder().encode(normalizeAnswer(v));const digest=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(digest)).map(function(b){return b.toString(16).padStart(2,'0')}).join('')}
-async function verifyGate(){const vals=[q1.value,q2.value,q3.value];const h=await Promise.all(vals.map(sha256));return allowedHashes.q1.includes(h[0])&&allowedHashes.q2.includes(h[1])&&allowedHashes.q3.includes(h[2])}
-function unlock(){sessionStorage.setItem('doosh-access','1');gate.classList.add('hidden');app.classList.remove('hidden');renderRankings();renderMembers();loadAllVotes()}
-function lock(){sessionStorage.removeItem('doosh-access');app.classList.add('hidden');gate.classList.remove('hidden');gateForm.reset();gateError.textContent='';window.scrollTo(0,0)}
-gateForm.addEventListener('submit',async function(e){e.preventDefault();gateError.textContent='Checking…';if(await verifyGate()){gateError.textContent='';unlock()}else gateError.textContent='At least one answer is wrong.'});
-lockBtn.addEventListener('click',lock);
+let members=[],currentUser=null,selectedMember=null,selectedFile=null,superTarget=null;
+let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
 
-function initials(name){const p=name.trim().split(/\s+/).filter(Boolean);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
-function esc(s){return s.replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
-function ranked(filter){const q=(filter||'').toLowerCase().trim();return members.filter(function(m){return!q||m.name.toLowerCase().includes(q)}).slice().sort(function(a,b){return b.votes-a.votes||a.name.localeCompare(b.name)})}
-function btnText(m){return voted.has(m.slug)?'▲ Upvoted':'▲ Upvote'}
+function el(id){return document.getElementById(id)}
+function norm(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
+async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function initials(name){const p=name.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
+function activeMembers(){return members.filter(m=>m.active!==false)}
+function memberBySlug(slug){return members.find(m=>m.slug===slug)}
+function avatarHTML(m){return m.photo?'<img src="'+esc(m.photo)+'" alt="">':initials(m.name)}
+function counterUrl(action,slug,readOnly,userId){
+  let u='https://counterapi.com/api/'+encodeURIComponent(COUNTER_NS)+'/'+encodeURIComponent(action)+'/'+encodeURIComponent(slug);
+  const q=[];
+  if(readOnly)q.push('readOnly=true');else q.push('behavior=vote');
+  if(userId)q.push('userId='+encodeURIComponent(userId));
+  return u+'?'+q.join('&');
+}
+async function readCounter(action,m){try{const r=await fetch(counterUrl(action,m.slug,true),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();return Number(d.value)||0}catch(e){return 0}}
+async function loadRoster(){
+  try{const r=await fetch('data.json?ts='+Date.now(),{cache:'no-store'});const d=await r.json();members=(d.members||[]).map(m=>({...m,up:0,down:0,loaded:false,signin:0}))}
+  catch(e){toast('Roster failed to load. Refresh the page.')}
+  populateSignin();
+}
+function populateSignin(){
+  const active=activeMembers().slice().sort((a,b)=>a.name.localeCompare(b.name));
+  el('signinSelect').innerHTML=active.map(m=>'<option value="'+esc(m.slug)+'">'+esc(m.name)+'</option>').join('');
+}
+async function loadVotes(){
+  const list=activeMembers();
+  for(let i=0;i<list.length;i+=8){
+    await Promise.all(list.slice(i,i+8).map(async m=>{const [up,down]=await Promise.all([readCounter('upvote',m),readCounter('downvote',m)]);m.up=up;m.down=down;m.loaded=true}));
+    renderRankings();renderMembers();
+    await new Promise(r=>setTimeout(r,70));
+  }
+}
+function score(m){return (m.up||0)-(m.down||0)}
+function ranked(filter=''){
+  const q=filter.toLowerCase().trim();
+  return activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>score(b)-score(a)||b.up-a.up||a.name.localeCompare(b.name));
+}
+function voteState(){
+  if(!currentUser)return {};
+  try{return JSON.parse(localStorage.getItem('pcdr-votes-'+currentUser.slug)||'{}')}catch(e){return {}}
+}
+function saveVoteState(state){if(currentUser)localStorage.setItem('pcdr-votes-'+currentUser.slug,JSON.stringify(state))}
 function renderRankings(){
-  const all=ranked(''),q=rankSearch.value,list=ranked(q);
-  rankingList.innerHTML=list.map(function(m){const rank=all.findIndex(function(x){return x.slug===m.slug})+1;return '<div class="rank-card '+(rank<=3?'top':'')+'"><div class="rank-num">#'+rank+'</div><div class="avatar">'+initials(m.name)+'</div><div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">'+(m.loaded?'Ranked by shared upvotes':'Loading votes…')+'</div></div><div class="votes"><strong>'+(m.loaded?m.votes:'…')+'</strong><small>upvotes</small></div><div class="actions" style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end"><button class="btn '+(voted.has(m.slug)?'upvoted':'primary')+'" '+(voted.has(m.slug)?'disabled':'')+' onclick="castVote(\''+m.slug+'\')">'+btnText(m)+'</button><button class="btn photo-btn" onclick="openPhotoRequest(\''+m.slug+'\')">Request Photo</button></div></div>'}).join('')||'<div class="tag" style="padding:22px;text-align:center">No matches.</div>';
+  const all=ranked(),list=ranked(el('rankSearch').value),state=voteState();
+  el('rankingList').innerHTML=list.map(m=>{
+    const r=all.findIndex(x=>x.slug===m.slug)+1,v=state[m.slug];
+    return '<div class="rank-card '+(r<=3?'top':'')+'">'+
+      '<div class="ranknum">#'+r+'</div><div class="avatar">'+avatarHTML(m)+'</div>'+
+      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?m.up:'…')+' &nbsp; ▼ '+(m.loaded?m.down:'…')+'</div></div>'+
+      '<div class="score"><strong>'+(m.loaded?score(m):'…')+'</strong><small>net score</small></div>'+
+      '<div class="actions">'+
+        '<button class="btn small '+(v==='up'?'good':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'up\')">▲ Upvote</button>'+
+        '<button class="btn small '+(v==='down'?'bad':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'down\')">▼ Downvote</button>'+
+        '<button class="btn small super" onclick="openSuper(\''+m.slug+'\')">★ Super</button>'+
+        '<button class="btn small" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button>'+
+      '</div></div>'
+  }).join('')||'<div class="tag" style="padding:20px;text-align:center">No matches.</div>';
   refreshStats();
 }
 function renderMembers(){
-  const q=memberSearch.value.toLowerCase().trim(),list=members.filter(function(m){return!q||m.name.toLowerCase().includes(q)}).slice().sort(function(a,b){return a.name.localeCompare(b.name)});
-  memberGrid.innerHTML=list.map(function(m){return '<div class="member"><div class="avatar">'+initials(m.name)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">'+(m.loaded?m.votes:'…')+' upvotes</div><div class="member-actions"><button class="btn '+(voted.has(m.slug)?'upvoted':'primary')+'" '+(voted.has(m.slug)?'disabled':'')+' onclick="castVote(\''+m.slug+'\')">'+btnText(m)+'</button><button class="btn photo-btn" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button></div></div>'}).join('');
+  const q=el('memberSearch').value.toLowerCase().trim(),state=voteState();
+  const list=activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  el('memberGrid').innerHTML=list.map(m=>{
+    const v=state[m.slug];
+    return '<div class="member"><div class="avatar">'+avatarHTML(m)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?m.up:'…')+' · ▼ '+(m.loaded?m.down:'…')+' · Net '+(m.loaded?score(m):'…')+'</div><div class="member-actions">'+
+    '<button class="btn small '+(v==='up'?'good':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'up\')">▲</button>'+
+    '<button class="btn small '+(v==='down'?'bad':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'down\')">▼</button>'+
+    '<button class="btn small super" onclick="openSuper(\''+m.slug+'\')">Super</button><button class="btn small" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button></div></div>'
+  }).join('');
 }
-function counterUrl(m,readOnly){let u='https://counterapi.com/api/'+encodeURIComponent(COUNTER_NS)+'/upvote/'+encodeURIComponent(m.slug);return u+(readOnly?'?readOnly=true':'?behavior=vote')}
-async function fetchVotes(m){try{const r=await fetch(counterUrl(m,true),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();m.votes=Number(d.value)||0}catch(e){}m.loaded=true}
-async function loadAllVotes(){for(let i=0;i<members.length;i+=8){await Promise.all(members.slice(i,i+8).map(fetchVotes));renderRankings();renderMembers();await new Promise(function(r){setTimeout(r,90)})}}
-async function castVote(slug){const m=members.find(function(x){return x.slug===slug});if(!m||voted.has(slug))return;try{const r=await fetch(counterUrl(m,false),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();m.votes=Number(d.value)||m.votes+1;m.loaded=true;voted.add(slug);localStorage.setItem(VOTED_KEY,JSON.stringify(Array.from(voted)));renderRankings();renderMembers();toast('Upvoted '+m.name)}catch(e){toast('Vote did not go through. Try again.')}}
-function refreshStats(){memberCount.textContent=members.length;totalVotes.textContent=members.every(function(m){return m.loaded})?members.reduce(function(s,m){return s+m.votes},0):'…';const l=ranked('')[0];leaderName.textContent=l&&l.loaded?l.name:'Loading…'}
-rankSearch.addEventListener('input',renderRankings);memberSearch.addEventListener('input',renderMembers);
-document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.view').forEach(function(v){v.classList.toggle('active',v.id===b.dataset.view)});document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('active',x===b)});b.dataset.view==='rankings'?renderRankings():renderMembers();window.scrollTo({top:230,behavior:'smooth'})})});
+function refreshStats(){
+  const list=activeMembers(),allLoaded=list.every(m=>m.loaded);
+  el('memberCount').textContent=list.length;
+  el('reactionCount').textContent=allLoaded?list.reduce((s,m)=>s+(m.up||0)+(m.down||0),0):'…';
+  const lead=ranked()[0];el('leaderName').textContent=lead&&lead.loaded?lead.name:'Loading…';
+}
+async function castVote(slug,dir){
+  if(!currentUser){showSignin();return}
+  const m=memberBySlug(slug),state=voteState();if(!m||state[slug])return;
+  const action=dir==='up'?'upvote':'downvote';
+  try{const r=await fetch(counterUrl(action,slug,false,currentUser.slug),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();if(dir==='up')m.up=Number(d.value)||m.up+1;else m.down=Number(d.value)||m.down+1;m.loaded=true;state[slug]=dir;saveVoteState(state);renderRankings();renderMembers();toast((dir==='up'?'Upvoted ':'Downvoted ')+m.name)}
+  catch(e){toast('Vote did not go through. Try again.')}
+}
+async function recordSignin(m){
+  const key='pcdr-signin-recorded-'+m.slug;if(localStorage.getItem(key)==='1')return;
+  try{await fetch(counterUrl('signin',m.slug,false,m.slug),{cache:'no-store'});localStorage.setItem(key,'1')}catch(e){}
+}
+function finishSignin(m){
+  currentUser=m;localStorage.setItem('pcdr-current-user',m.slug);recordSignin(m);el('signinScreen').classList.remove('show');el('app').classList.remove('hidden');el('who').textContent=m.name;updateAdminUI();renderRankings();renderMembers();loadVotes();
+}
+function showSignin(){el('app').classList.add('hidden');el('signinScreen').classList.add('show')}
+el('signinBtn').addEventListener('click',()=>{const m=memberBySlug(el('signinSelect').value);if(m)finishSignin(m)});
+el('signoutBtn').addEventListener('click',()=>{localStorage.removeItem('pcdr-current-user');currentUser=null;showSignin()});
 
-function openPhotoRequest(slug){selectedMember=members.find(function(m){return m.slug===slug});selectedFile=null;photoTitle.textContent='Photo for '+selectedMember.name;preview.classList.remove('show');photoInput.value='';photoModal.classList.add('show')}
-function closePhotoRequest(){photoModal.classList.remove('show');selectedFile=null}
-function useFile(file){if(!file)return;if(!file.type.startsWith('image/')){toast('Please choose an image file.');return}if(file.size>10*1024*1024){toast('Keep the image under 10 MB.');return}selectedFile=file;previewImg.src=URL.createObjectURL(file);fileName.textContent=file.name;fileMeta.textContent=(file.size/1024/1024).toFixed(2)+' MB';preview.classList.add('show')}
-dropzone.addEventListener('click',function(){photoInput.click()});dropzone.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();photoInput.click()}});photoInput.addEventListener('change',function(){useFile(photoInput.files[0])});
-['dragenter','dragover'].forEach(function(t){dropzone.addEventListener(t,function(e){e.preventDefault();dropzone.classList.add('drag')})});['dragleave','drop'].forEach(function(t){dropzone.addEventListener(t,function(e){e.preventDefault();dropzone.classList.remove('drag')})});dropzone.addEventListener('drop',function(e){useFile(e.dataTransfer.files[0])});
-closePhoto.addEventListener('click',closePhotoRequest);cancelPhoto.addEventListener('click',closePhotoRequest);photoModal.addEventListener('click',function(e){if(e.target===photoModal)closePhotoRequest()});
-submitPhoto.addEventListener('click',async function(){if(!selectedMember||!selectedFile){toast('Drop a picture first.');return}let copied=false;try{if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){const item={};item[selectedFile.type]=selectedFile;await navigator.clipboard.write([new ClipboardItem(item)]);copied=true}}catch(e){}const title='Photo Request: '+selectedMember.name;const body='Photo request for **'+selectedMember.name+'**.\\n\\n'+(copied?'The image was copied to my clipboard from Doosh Rankings. I will paste it below before submitting.':'I selected an image on Doosh Rankings. I will drag the image into this issue below before submitting.')+'\\n\\nPlease review this image before adding it to the site.';window.open('https://github.com/lucasjusto014-droid/Workout-app/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');closePhotoRequest();toast(copied?'GitHub opened — paste the copied image into the issue.':'GitHub opened — drag the image into the issue and submit.')});
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(function(){t.classList.remove('show')},2200)}
-if(sessionStorage.getItem('doosh-access')==='1')unlock();
+el('gateForm').addEventListener('submit',async e=>{
+  e.preventDefault();el('gateError').textContent='Checking…';
+  const hs=await Promise.all([hash(el('q1').value),hash(el('q2').value),hash(el('q3').value)]);
+  const ok=ACCESS_HASHES.q1.includes(hs[0])&&ACCESS_HASHES.q2.includes(hs[1])&&ACCESS_HASHES.q3.includes(hs[2]);
+  if(!ok){el('gateError').textContent='At least one answer is wrong.';return}
+  sessionStorage.setItem('pcdr-access','1');el('gate').classList.add('hidden');
+  const saved=localStorage.getItem('pcdr-current-user'),m=saved&&memberBySlug(saved);
+  if(m&&m.active!==false)finishSignin(m);else showSignin();
+});
+
+document.querySelectorAll('nav button[data-view]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
+  document.querySelectorAll('nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+  if(id==='admin'){renderAdminRoster();loadSignins()}
+  window.scrollTo({top:220,behavior:'smooth'});
+}
+el('rankSearch').addEventListener('input',renderRankings);el('memberSearch').addEventListener('input',renderMembers);
+
+el('adminBtn').addEventListener('click',()=>{if(adminUnlocked){go('admin')}else{el('adminKey').value='';el('adminError').textContent='';el('adminModal').classList.add('show')}});
+el('cancelAdmin').addEventListener('click',()=>el('adminModal').classList.remove('show'));
+el('submitAdmin').addEventListener('click',async()=>{
+  if(await hash(el('adminKey').value)!==ADMIN_HASH){el('adminError').textContent='Wrong master key.';return}
+  adminUnlocked=true;sessionStorage.setItem('pcdr-admin','1');el('adminModal').classList.remove('show');updateAdminUI();go('admin');toast('Master mode unlocked')
+});
+function updateAdminUI(){el('adminTab').classList.toggle('hidden',!adminUnlocked)}
+async function loadSignins(){
+  if(!adminUnlocked)return;el('signinList').innerHTML='<div class="tag">Loading sign-ins…</div>';
+  const list=activeMembers();
+  for(let i=0;i<list.length;i+=10){await Promise.all(list.slice(i,i+10).map(async m=>{m.signin=await readCounter('signin',m)}))}
+  const signed=list.filter(m=>m.signin>0).sort((a,b)=>b.signin-a.signin||a.name.localeCompare(b.name));
+  el('signinList').innerHTML=signed.length?signed.map(m=>'<div class="admin-row"><div><strong>'+esc(m.name)+'</strong><span>Signed in'+(m.signin>1?' · '+m.signin+' recorded devices/uses':'')+'</span></div><span>✓</span></div>').join(''):'<div class="tag">Nobody recorded yet.</div>';
+}
+el('refreshSignins').addEventListener('click',loadSignins);
+function renderAdminRoster(){
+  if(!adminUnlocked)return;
+  el('adminRoster').innerHTML=activeMembers().slice().sort((a,b)=>a.name.localeCompare(b.name)).map(m=>'<div class="admin-row"><div><strong>'+esc(m.name)+'</strong><span>'+esc(m.slug)+'</span></div><div class="admin-actions"><button class="btn small" onclick="adminPhoto(\''+m.slug+'\')">Photo</button><button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button></div></div>').join('');
+}
+function adminDelete(slug){
+  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m||!confirm('Remove '+m.name+' from the public PC roster?'))return;
+  const title='PCDR Admin Delete: '+slug,body='Owner-only PC Doosh Rankings admin command.\\n\\nRemove **'+m.name+'** from the public roster.';
+  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
+  toast('Submit the GitHub issue from your owner account to apply the removal.')
+}
+function adminPhoto(slug){
+  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+  const title='PCDR Admin Photo: '+slug,body='Owner-only PC Doosh Rankings admin command for **'+m.name+'**.\\n\\n**Attach the image below this line BEFORE submitting this issue.**\\n\\n';
+  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
+  toast('Attach the image to the GitHub issue, then submit it.')
+}
+el('openSuperRequests').addEventListener('click',()=>window.open('https://github.com/'+REPO+'/issues?q=is%3Aissue+is%3Aopen+%22Super+Upvote+Request%22','_blank','noopener'));
+
+function openPhotoRequest(slug){selectedMember=memberBySlug(slug);selectedFile=null;el('photoTitle').textContent='Photo request for '+selectedMember.name;el('preview').classList.remove('show');el('photoInput').value='';el('photoModal').classList.add('show')}
+function closePhoto(){el('photoModal').classList.remove('show');selectedFile=null}
+function useFile(f){if(!f)return;if(!f.type.startsWith('image/')){toast('Choose an image file.');return}if(f.size>10*1024*1024){toast('Keep it under 10 MB.');return}selectedFile=f;el('previewImg').src=URL.createObjectURL(f);el('fileName').textContent=f.name;el('fileMeta').textContent=(f.size/1024/1024).toFixed(2)+' MB';el('preview').classList.add('show')}
+el('dropzone').addEventListener('click',()=>el('photoInput').click());el('photoInput').addEventListener('change',()=>useFile(el('photoInput').files[0]));
+['dragenter','dragover'].forEach(t=>el('dropzone').addEventListener(t,e=>{e.preventDefault();el('dropzone').classList.add('drag')}));['dragleave','drop'].forEach(t=>el('dropzone').addEventListener(t,e=>{e.preventDefault();el('dropzone').classList.remove('drag')}));el('dropzone').addEventListener('drop',e=>useFile(e.dataTransfer.files[0]));
+el('cancelPhoto').addEventListener('click',closePhoto);
+el('submitPhoto').addEventListener('click',async()=>{
+  if(!selectedMember||!selectedFile){toast('Drop a picture first.');return}
+  let copied=false;try{if(window.ClipboardItem&&navigator.clipboard?.write){const item={};item[selectedFile.type]=selectedFile;await navigator.clipboard.write([new ClipboardItem(item)]);copied=true}}catch(e){}
+  const title='Photo Request: '+selectedMember.name;
+  const body='Requested by **'+(currentUser?currentUser.name:'Unknown')+'** for **'+selectedMember.name+'**.\\n\\n'+(copied?'The image was copied to my clipboard. I will paste it below before submitting.':'I will drag the image below before submitting.')+'\\n\\nPlease review before adding it.';
+  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');closePhoto();toast(copied?'Paste the copied image into the GitHub issue, then submit.':'Drag the image into the GitHub issue, then submit.')
+});
+
+function openSuper(slug){superTarget=memberBySlug(slug);el('superTitle').textContent='Super Upvote: '+superTarget.name;el('superReason').value='';el('superError').textContent='';el('superModal').classList.add('show')}
+el('cancelSuper').addEventListener('click',()=>el('superModal').classList.remove('show'));
+el('submitSuper').addEventListener('click',()=>{
+  const reason=el('superReason').value.trim();if(reason.length<8){el('superError').textContent='Give at least a short reason.';return}
+  const title='Super Upvote Request: '+superTarget.name;
+  const body='**Requester:** '+currentUser.name+'\\n\\n**Target:** '+superTarget.name+'\\n\\n**Why they should be higher:**\\n'+reason+'\\n\\n---\\nThis is a request only; it does not automatically change the ranking.';
+  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');el('superModal').classList.remove('show');toast('Submit the GitHub request so the admin can review it.')
+});
+
+function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__t);window.__t=setTimeout(()=>t.classList.remove('show'),2400)}
+(async()=>{
+  await loadRoster();updateAdminUI();
+  if(sessionStorage.getItem('pcdr-access')==='1'){
+    el('gate').classList.add('hidden');
+    const saved=localStorage.getItem('pcdr-current-user'),m=saved&&memberBySlug(saved);
+    if(m&&m.active!==false)finishSignin(m);else showSignin();
+  }
+})();
 </script>
 </body>
 </html>
