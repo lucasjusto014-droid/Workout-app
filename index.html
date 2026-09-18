@@ -25,7 +25,8 @@ nav{display:flex;gap:3px}nav button,.navbtn{border:0;background:transparent;colo
 .admin-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.panel h3{margin:0 0 5px;font-size:20px}.admin-list{max-height:610px;overflow:auto;margin-top:12px}.admin-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #25252b}.admin-row:last-child{border:0}.admin-row strong{display:block}.admin-row span{color:var(--muted);font-size:12px}.admin-actions{display:flex;gap:6px}
 .modal,.screen{position:fixed;inset:0;z-index:80;background:rgba(3,3,5,.84);backdrop-filter:blur(7px);display:none;place-items:center;padding:20px}.modal.show,.screen.show{display:grid}.card{width:min(580px,100%);background:#121216;border:1px solid #34343c;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 5px;letter-spacing:-.04em}.card .sub{color:var(--muted);margin:0 0 18px}.formrow{margin:13px 0}.formrow label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}.error{color:#ff8a84;min-height:20px;font-size:12px;font-weight:800;margin-top:8px}
 .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#251516,#0a0a0d 40%,#070709);display:grid;place-items:center;padding:20px}.gate .card{width:min(620px,100%)}.gate-logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);font-size:24px;font-weight:1000;margin-bottom:16px}
-.dropzone{border:1.5px dashed #474751;border-radius:14px;padding:26px;text-align:center;background:#0d0d10;color:#aaaab4}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff}.preview{display:none;gap:10px;align-items:center;margin-top:12px;border:1px solid var(--line);padding:10px;border-radius:12px}.preview.show{display:flex}.preview img{width:62px;height:62px;object-fit:cover;border-radius:9px}.preview span{display:block;color:var(--muted);font-size:12px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.note{color:#888893;font-size:11px;margin-top:12px}.toast{position:fixed;left:50%;bottom:20px;z-index:120;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;border-radius:10px;padding:10px 14px;box-shadow:var(--shadow);transition:.2s;max-width:min(520px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+.dropzone{border:1.5px dashed #474751;border-radius:14px;padding:26px;text-align:center;background:#0d0d10;color:#aaaab4}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff}.preview{display:none;gap:10px;align-items:center;margin-top:12px;border:1px solid var(--line);padding:10px;border-radius:12px}.preview.show{display:flex}.preview img{width:62px;height:62px;object-fit:cover;border-radius:9px}.preview span{display:block;color:var(--muted);font-size:12px}.crop-preview{width:min(320px,82vw);aspect-ratio:1;border-radius:24px;overflow:hidden;margin:14px auto;background:#0d0d10;border:1px solid #34343c}.crop-preview img{width:100%;height:100%;object-fit:cover;display:block}.crop-control{margin:12px 0}.crop-control label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:850;margin-bottom:5px}.crop-control input[type="range"]{width:100%}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.note{color:#888893;font-size:11px;margin-top:12px}.toast{position:fixed;left:50%;bottom:20px;z-index:120;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;border-radius:10px;padding:10px 14px;box-shadow:var(--shadow);transition:.2s;max-width:min(520px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
 footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;color:#767680;font-size:11px}
 @media(max-width:880px){.rank-card{grid-template-columns:44px 48px 1fr auto}.rank-card .actions{grid-column:3/5}.members{grid-template-columns:1fr 1fr}.admin-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.nav{display:block;padding:11px 0}.brand{margin-bottom:9px}.nav nav{overflow:auto}.who{position:absolute;right:14px;top:18px}.nav>.navbtn{margin-top:7px}.stats{grid-template-columns:1fr}.hero{padding-top:45px}}
@@ -162,6 +163,18 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
   </div>
 </div>
 
+<div id="cropModal" class="modal">
+  <div class="card">
+    <h3 id="cropTitle">Crop Photo</h3>
+    <p class="sub">Move the frame until the face is centered. This changes how the photo is displayed; it does not alter the original file.</p>
+    <div class="crop-preview"><img id="cropPreviewImg" alt=""></div>
+    <div class="crop-control"><label><span>Horizontal</span><span id="cropXValue">50%</span></label><input id="cropX" type="range" min="0" max="100" step="1" value="50"></div>
+    <div class="crop-control"><label><span>Vertical</span><span id="cropYValue">50%</span></label><input id="cropY" type="range" min="0" max="100" step="1" value="50"></div>
+    <div class="crop-control"><label><span>Zoom</span><span id="cropZoomValue">1.00×</span></label><input id="cropZoom" type="range" min="1" max="2.5" step="0.05" value="1"></div>
+    <div class="modal-actions"><button id="resetCropBtn" class="btn">Reset</button><button id="cancelCropBtn" class="btn">Cancel</button><button id="saveCropBtn" class="btn primary">Save Crop</button></div>
+  </div>
+</div>
+
 <div id="photoModal" class="modal">
   <div class="card">
     <h3 id="photoTitle">Photo request</h3><p class="sub">Drop a picture. You'll review it in a GitHub request before submitting.</p>
@@ -193,7 +206,7 @@ const ACCESS_ANSWERS={
  q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
  q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
-let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpQueue=[],pvpBusy=false,pvpStats=new Map();
+let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpQueue=[],pvpBusy=false,pvpStats=new Map(),cropTarget=null;
 const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
 localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
@@ -207,7 +220,13 @@ function initials(name){const p=name.trim().split(/\s+/);return p.length===1?p[0
 function activeMembers(){return members.filter(m=>m.active!==false)}
 function pvpMembers(){return activeMembers().filter(m=>!!m.photo)}
 function memberBySlug(slug){return members.find(m=>m.slug===slug)}
-function avatarHTML(m){return m.photo?'<img src="'+esc(m.photo)+'" alt="">':initials(m.name)}
+function avatarHTML(m){
+  if(!m.photo)return initials(m.name);
+  const x=Number.isFinite(Number(m.photoX))?Number(m.photoX):50;
+  const y=Number.isFinite(Number(m.photoY))?Number(m.photoY):50;
+  const z=Number.isFinite(Number(m.photoZoom))?Number(m.photoZoom):1;
+  return '<img src="'+esc(m.photo)+'" alt="" style="object-position:'+x+'% '+y+'%;transform:scale('+z+');transform-origin:'+x+'% '+y+'%">';
+}
 function counterUrl(action,slug,readOnly,userId){
   let u='https://counterapi.com/api/'+encodeURIComponent(COUNTER_NS)+'/'+encodeURIComponent(action)+'/'+encodeURIComponent(slug);
   const q=[];
@@ -556,12 +575,52 @@ function renderAdminRoster(){
       '<div class="admin-actions">'+
       '<button class="btn small" onclick="adminSetRank(\''+m.slug+'\')">Rank</button>'+
       '<button class="btn small" onclick="adminPhotoDirect(\''+m.slug+'\')">Photo</button>'+
+      (m.photo?'<button class="btn small" onclick="adminCrop(\''+m.slug+'\')">Crop</button>':'')+
       '<button class="btn small" onclick="adminRename(\''+m.slug+'\')">Name</button>'+
       '<button class="btn small" onclick="adminResetVotes(\''+m.slug+'\')">Reset Votes</button>'+
       (active?'<button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button>':'<button class="btn small good" onclick="adminRestore(\''+m.slug+'\')">Restore</button>')+
       '</div></div>';
   }).join('');
 }
+
+function updateCropPreview(){
+  if(!cropTarget)return;
+  const x=Number(el('cropX').value),y=Number(el('cropY').value),z=Number(el('cropZoom').value);
+  const img=el('cropPreviewImg');
+  img.style.objectPosition=x+'% '+y+'%';
+  img.style.transform='scale('+z+')';
+  img.style.transformOrigin=x+'% '+y+'%';
+  el('cropXValue').textContent=x+'%';
+  el('cropYValue').textContent=y+'%';
+  el('cropZoomValue').textContent=z.toFixed(2)+'×';
+}
+function adminCrop(slug){
+  if(!adminUnlocked||!requireGitHub())return;
+  const m=memberBySlug(slug);if(!m||!m.photo){toast('No photo to crop.');return}
+  cropTarget=m;
+  el('cropTitle').textContent='Crop '+m.name;
+  el('cropPreviewImg').src=m.photo;
+  el('cropX').value=Number.isFinite(Number(m.photoX))?Number(m.photoX):50;
+  el('cropY').value=Number.isFinite(Number(m.photoY))?Number(m.photoY):50;
+  el('cropZoom').value=Number.isFinite(Number(m.photoZoom))?Number(m.photoZoom):1;
+  updateCropPreview();
+  el('cropModal').classList.add('show');
+}
+['cropX','cropY','cropZoom'].forEach(id=>el(id).addEventListener('input',updateCropPreview));
+el('resetCropBtn').addEventListener('click',()=>{
+  el('cropX').value=50;el('cropY').value=50;el('cropZoom').value=1;updateCropPreview();
+});
+el('cancelCropBtn').addEventListener('click',()=>{el('cropModal').classList.remove('show');cropTarget=null});
+el('saveCropBtn').addEventListener('click',async()=>{
+  if(!cropTarget)return;
+  const slug=cropTarget.slug,x=Number(el('cropX').value),y=Number(el('cropY').value),z=Number(el('cropZoom').value);
+  const ok=await mutateRepoData('Crop '+cropTarget.name+' photo',data=>{
+    const m=(data.members||[]).find(xm=>xm.slug===slug);if(!m)return false;
+    m.photoX=x;m.photoY=y;m.photoZoom=z;return true;
+  });
+  if(ok){el('cropModal').classList.remove('show');cropTarget=null}
+});
+
 async function adminAdd(){
   if(!adminUnlocked||!requireGitHub())return;
   const name=prompt('Name of the new pledge:');
@@ -814,7 +873,7 @@ async function importPhotoSheet(file){
       for(const m of data.members||[])m.photo=null;
       for(const [slug,path] of photoPaths){
         const m=(data.members||[]).find(x=>x.slug===slug);
-        if(m)m.photo=path;
+        if(m){m.photo=path;m.photoX=50;m.photoY=50;m.photoZoom=1;}
       }
       return true;
     });
