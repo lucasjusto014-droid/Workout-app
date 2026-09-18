@@ -36,7 +36,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
   <div class="card">
     <div class="gate-logo">PC</div>
     <h2>PC Doosh Rankings</h2>
-    <p class="sub">Answer all three to get in. Answers aren't case sensitive.</p>
+    <p class="sub">Answer all three to get in. Answers aren't case sensitive. <span style="color:#666">Gate v3</span></p>
     <form id="gateForm">
       <div class="formrow"><label>Who MKs favorite brother?</label><input id="q1" class="field" autocomplete="off" required></div>
       <div class="formrow"><label>Who is PCP</label><input id="q2" class="field" autocomplete="off" required></div>
@@ -149,10 +149,10 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
 const REPO='lucasjusto014-droid/Workout-app';
 const COUNTER_NS='pc-doosh-rankings-v2';
 const ADMIN_HASH='ef4cc952dfbb29be535112b1d67ac109b5de893e6ea1333d55e047a9534d140e';
-const ACCESS_HASHES={
- q1:['17108a1830ed4c4408e62ec8bba9ef7c214a47ec4027195d9fbf338ef166a1d1'],
- q2:['72831924521887e6638e686d6d004cd6cefe48168d2d4e2c40d29115b9c611b9','ff06535ac1029cca2fc2b86ac7355a7b4e0b8d839fc76b51d30833f4e1347ddc','df54bf6ad645652f9ad233962de4f9579df523872e2086a8cb2429612f3468ae','dac5be67dba88500ea1138a8b4052f201c2b799195eb10d91ac1771633d4c9ab'],
- q3:['c821004cda28794b11dd685ad491826ec7622686b69a5171d005aa1581827f31','596328ec7d63edae06a1b335f73139adcc743b93be8f95e243ef0d56fc58c447','b1653105a60cb9542c727f0a735902004764602df4ac6886383a3f1ec61c35cc']
+const ACCESS_ANSWERS={
+ q1:['warden schulte'],
+ q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
+ q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
 let members=[],authAccounts=[],currentUser=null,selectedMember=null,selectedFile=null,superTarget=null;
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
@@ -293,11 +293,15 @@ el('signinBtn').addEventListener('click',async()=>{
 el('signinPassword').addEventListener('keydown',e=>{if(e.key==='Enter')el('signinBtn').click()});
 el('signoutBtn').addEventListener('click',()=>{localStorage.removeItem('pcdr-auth-user-v2');currentUser=null;showSignin()});
 
-el('gateForm').addEventListener('submit',async e=>{
-  e.preventDefault();el('gateError').textContent='Checking…';
-  const hs=await Promise.all([hash(el('q1').value),hash(el('q2').value),hash(el('q3').value)]);
-  const ok=ACCESS_HASHES.q1.includes(hs[0])&&ACCESS_HASHES.q2.includes(hs[1])&&ACCESS_HASHES.q3.includes(hs[2]);
-  if(!ok){el('gateError').textContent='At least one answer is wrong.';return}
+el('gateForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const a1=norm(el('q1').value),a2=norm(el('q2').value),a3=norm(el('q3').value);
+  const wrong=[];
+  if(!ACCESS_ANSWERS.q1.includes(a1)) wrong.push('Question 1');
+  if(!ACCESS_ANSWERS.q2.includes(a2)) wrong.push('Question 2');
+  if(!ACCESS_ANSWERS.q3.includes(a3)) wrong.push('Question 3');
+  if(wrong.length){el('gateError').textContent=wrong.join(', ')+' incorrect.';return}
+  el('gateError').textContent='';
   sessionStorage.setItem('pcdr-access','1');el('gate').classList.add('hidden');
   const saved=localStorage.getItem('pcdr-auth-user-v2'),m=saved&&memberBySlug(saved);
   if(m&&m.active!==false)finishSignin(m);else showSignin();
