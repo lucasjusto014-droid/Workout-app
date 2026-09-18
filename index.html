@@ -51,10 +51,12 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
   <div class="card">
     <div class="gate-logo">PC</div>
     <h2>Sign in to the PC</h2>
-    <p class="sub">Pick your name. This keeps each person's votes separate and lets the admin see which roster names have signed in.</p>
-    <div class="formrow"><label>Your name</label><select id="signinSelect" class="field"></select></div>
+    <p class="sub">Use the email and temporary password assigned to your roster account.</p>
+    <div class="formrow"><label>Email</label><input id="signinEmail" class="field" type="email" autocomplete="username" placeholder="you@example.com"></div>
+    <div class="formrow"><label>Password</label><input id="signinPassword" class="field" type="password" autocomplete="current-password" placeholder="Password"></div>
     <button id="signinBtn" class="btn primary" style="width:100%">Sign in</button>
-    <div class="note">This is an informal roster sign-in, not identity verification. Don't sign in as someone else.</div>
+    <div id="signinError" class="error"></div>
+    <div class="note">Passwords are case-sensitive. Email matching is not case-sensitive.</div>
   </div>
 </div>
 
@@ -148,16 +150,16 @@ const REPO='lucasjusto014-droid/Workout-app';
 const COUNTER_NS='pc-doosh-rankings-v2';
 const ADMIN_HASH='ef4cc952dfbb29be535112b1d67ac109b5de893e6ea1333d55e047a9534d140e';
 const ACCESS_HASHES={
- q1:['3b2e41f89cf44ea23ed00f68cb33ff83893a84ec6f654bc809836a091cb77d65'],
+ q1:['17108a1830ed4c4408e62ec8bba9ef7c214a47ec4027195d9fbf338ef166a1d1'],
  q2:['72831924521887e6638e686d6d004cd6cefe48168d2d4e2c40d29115b9c611b9','ff06535ac1029cca2fc2b86ac7355a7b4e0b8d839fc76b51d30833f4e1347ddc','df54bf6ad645652f9ad233962de4f9579df523872e2086a8cb2429612f3468ae','dac5be67dba88500ea1138a8b4052f201c2b799195eb10d91ac1771633d4c9ab'],
  q3:['c821004cda28794b11dd685ad491826ec7622686b69a5171d005aa1581827f31','596328ec7d63edae06a1b335f73139adcc743b93be8f95e243ef0d56fc58c447','b1653105a60cb9542c727f0a735902004764602df4ac6886383a3f1ec61c35cc']
 };
-let members=[],currentUser=null,selectedMember=null,selectedFile=null,superTarget=null;
+let members=[],authAccounts=[],currentUser=null,selectedMember=null,selectedFile=null,superTarget=null;
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
 
 function el(id){return document.getElementById(id)}
 function norm(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
-async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}\nasync function credentialHash(email,password){const raw=email.trim().toLowerCase()+'\\n'+password;const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function initials(name){const p=name.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
 function activeMembers(){return members.filter(m=>m.active!==false)}
@@ -172,26 +174,35 @@ function counterUrl(action,slug,readOnly,userId){
 }
 async function readCounter(action,m){try{const r=await fetch(counterUrl(action,m.slug,true),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();return Number(d.value)||0}catch(e){return 0}}
 async function loadRoster(){
-  try{const r=await fetch('data.json?ts='+Date.now(),{cache:'no-store'});const d=await r.json();members=(d.members||[]).map(m=>({...m,up:0,down:0,loaded:false,signin:0}))}
-  catch(e){toast('Roster failed to load. Refresh the page.')}
-  populateSignin();
-}
-function populateSignin(){
-  const active=activeMembers().slice().sort((a,b)=>a.name.localeCompare(b.name));
-  el('signinSelect').innerHTML=active.map(m=>'<option value="'+esc(m.slug)+'">'+esc(m.name)+'</option>').join('');
+  try{
+    const [rr,ar]=await Promise.all([
+      fetch('data.json?ts='+Date.now(),{cache:'no-store'}),
+      fetch('auth.json?ts='+Date.now(),{cache:'no-store'})
+    ]);
+    const d=await rr.json(),a=await ar.json();
+    members=(d.members||[]).map(m=>({...m,up:0,down:0,upUndo:0,downUndo:0,loaded:false,signin:0}));
+    authAccounts=a.accounts||[];
+  }catch(e){toast('Account data failed to load. Refresh the page.')}
 }
 async function loadVotes(){
   const list=activeMembers();
   for(let i=0;i<list.length;i+=8){
-    await Promise.all(list.slice(i,i+8).map(async m=>{const [up,down]=await Promise.all([readCounter('upvote',m),readCounter('downvote',m)]);m.up=up;m.down=down;m.loaded=true}));
+    await Promise.all(list.slice(i,i+8).map(async m=>{
+      const [up,down,upUndo,downUndo]=await Promise.all([
+        readCounter('upvote',m),readCounter('downvote',m),readCounter('upundo',m),readCounter('downundo',m)
+      ]);
+      m.up=up;m.down=down;m.upUndo=upUndo;m.downUndo=downUndo;m.loaded=true;
+    }));
     renderRankings();renderMembers();
     await new Promise(r=>setTimeout(r,70));
   }
 }
-function score(m){return (m.up||0)-(m.down||0)}
+function effectiveUp(m){return Math.max(0,(m.up||0)-(m.upUndo||0))}
+function effectiveDown(m){return Math.max(0,(m.down||0)-(m.downUndo||0))}
+function score(m){return effectiveUp(m)-effectiveDown(m)}
 function ranked(filter=''){
   const q=filter.toLowerCase().trim();
-  return activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>score(b)-score(a)||b.up-a.up||a.name.localeCompare(b.name));
+  return activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>score(b)-score(a)||effectiveUp(b)-effectiveUp(a)||a.name.localeCompare(b.name));
 }
 function voteState(){
   if(!currentUser)return {};
@@ -204,11 +215,11 @@ function renderRankings(){
     const r=all.findIndex(x=>x.slug===m.slug)+1,v=state[m.slug];
     return '<div class="rank-card '+(r<=3?'top':'')+'">'+
       '<div class="ranknum">#'+r+'</div><div class="avatar">'+avatarHTML(m)+'</div>'+
-      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?m.up:'…')+' &nbsp; ▼ '+(m.loaded?m.down:'…')+'</div></div>'+
+      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' &nbsp; ▼ '+(m.loaded?effectiveDown(m):'…')+'</div></div>'+
       '<div class="score"><strong>'+(m.loaded?score(m):'…')+'</strong><small>net score</small></div>'+
       '<div class="actions">'+
-        '<button class="btn small '+(v==='up'?'good':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'up\')">▲ Upvote</button>'+
-        '<button class="btn small '+(v==='down'?'bad':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'down\')">▼ Downvote</button>'+
+        '<button class="btn small '+(v==='up'?'good':'')+'" onclick="castVote(\''+m.slug+'\',\'up\')">'+(v==='up'?'↩ Undo Upvote':(v==='down'?'▲ Switch to Upvote':'▲ Upvote'))+'</button>'+
+        '<button class="btn small '+(v==='down'?'bad':'')+'" onclick="castVote(\''+m.slug+'\',\'down\')">'+(v==='down'?'↩ Undo Downvote':(v==='up'?'▼ Switch to Downvote':'▼ Downvote'))+'</button>'+
         '<button class="btn small super" onclick="openSuper(\''+m.slug+'\')">★ Super</button>'+
         '<button class="btn small" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button>'+
       '</div></div>'
@@ -220,24 +231,42 @@ function renderMembers(){
   const list=activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>a.name.localeCompare(b.name));
   el('memberGrid').innerHTML=list.map(m=>{
     const v=state[m.slug];
-    return '<div class="member"><div class="avatar">'+avatarHTML(m)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?m.up:'…')+' · ▼ '+(m.loaded?m.down:'…')+' · Net '+(m.loaded?score(m):'…')+'</div><div class="member-actions">'+
-    '<button class="btn small '+(v==='up'?'good':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'up\')">▲</button>'+
-    '<button class="btn small '+(v==='down'?'bad':'')+'" '+(v?'disabled':'')+' onclick="castVote(\''+m.slug+'\',\'down\')">▼</button>'+
+    return '<div class="member"><div class="avatar">'+avatarHTML(m)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' · ▼ '+(m.loaded?effectiveDown(m):'…')+' · Net '+(m.loaded?score(m):'…')+'</div><div class="member-actions">'+
+    '<button class="btn small '+(v==='up'?'good':'')+'" onclick="castVote(\''+m.slug+'\',\'up\')">'+(v==='up'?'↩':'▲')+'</button>'+
+    '<button class="btn small '+(v==='down'?'bad':'')+'" onclick="castVote(\''+m.slug+'\',\'down\')">'+(v==='down'?'↩':'▼')+'</button>'+
     '<button class="btn small super" onclick="openSuper(\''+m.slug+'\')">Super</button><button class="btn small" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button></div></div>'
   }).join('');
 }
 function refreshStats(){
   const list=activeMembers(),allLoaded=list.every(m=>m.loaded);
   el('memberCount').textContent=list.length;
-  el('reactionCount').textContent=allLoaded?list.reduce((s,m)=>s+(m.up||0)+(m.down||0),0):'…';
+  el('reactionCount').textContent=allLoaded?list.reduce((s,m)=>s+effectiveUp(m)+effectiveDown(m),0):'…';
   const lead=ranked()[0];el('leaderName').textContent=lead&&lead.loaded?lead.name:'Loading…';
+}
+async function incrementAction(action,m){
+  const r=await fetch(counterUrl(action,m.slug,false,currentUser.slug),{cache:'no-store'});
+  if(!r.ok)throw 0;const d=await r.json();return Number(d.value)||0;
 }
 async function castVote(slug,dir){
   if(!currentUser){showSignin();return}
-  const m=memberBySlug(slug),state=voteState();if(!m||state[slug])return;
-  const action=dir==='up'?'upvote':'downvote';
-  try{const r=await fetch(counterUrl(action,slug,false,currentUser.slug),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();if(dir==='up')m.up=Number(d.value)||m.up+1;else m.down=Number(d.value)||m.down+1;m.loaded=true;state[slug]=dir;saveVoteState(state);renderRankings();renderMembers();toast((dir==='up'?'Upvoted ':'Downvoted ')+m.name)}
-  catch(e){toast('Vote did not go through. Try again.')}
+  const m=memberBySlug(slug),state=voteState();if(!m)return;
+  const old=state[slug]||null;
+  try{
+    if(old===dir){
+      if(dir==='up')m.upUndo=await incrementAction('upundo',m);
+      else m.downUndo=await incrementAction('downundo',m);
+      delete state[slug];
+      toast('Vote removed for '+m.name);
+    }else{
+      if(old==='up')m.upUndo=await incrementAction('upundo',m);
+      if(old==='down')m.downUndo=await incrementAction('downundo',m);
+      if(dir==='up')m.up=await incrementAction('upvote',m);
+      else m.down=await incrementAction('downvote',m);
+      state[slug]=dir;
+      toast((old?'Switched vote on ':'Voted on ')+m.name);
+    }
+    m.loaded=true;saveVoteState(state);renderRankings();renderMembers();
+  }catch(e){toast('Vote change did not go through. Try again.')}
 }
 async function recordSignin(m){
   const key='pcdr-signin-recorded-'+m.slug;if(localStorage.getItem(key)==='1')return;
@@ -246,8 +275,21 @@ async function recordSignin(m){
 function finishSignin(m){
   currentUser=m;localStorage.setItem('pcdr-current-user',m.slug);recordSignin(m);el('signinScreen').classList.remove('show');el('app').classList.remove('hidden');el('who').textContent=m.name;updateAdminUI();renderRankings();renderMembers();loadVotes();
 }
-function showSignin(){el('app').classList.add('hidden');el('signinScreen').classList.add('show')}
-el('signinBtn').addEventListener('click',()=>{const m=memberBySlug(el('signinSelect').value);if(m)finishSignin(m)});
+function showSignin(){
+  el('app').classList.add('hidden');el('signinScreen').classList.add('show');
+  el('signinPassword').value='';el('signinError').textContent='';
+}
+el('signinBtn').addEventListener('click',async()=>{
+  el('signinError').textContent='Checking…';
+  const email=el('signinEmail').value.trim(),password=el('signinPassword').value;
+  if(!email||!password){el('signinError').textContent='Enter both email and password.';return}
+  const ch=await credentialHash(email,password);
+  const acct=authAccounts.find(a=>a.credentialHash===ch);
+  const m=acct&&memberBySlug(acct.slug);
+  if(!m||m.active===false){el('signinError').textContent='Email or password is incorrect.';return}
+  el('signinError').textContent='';finishSignin(m);
+});
+el('signinPassword').addEventListener('keydown',e=>{if(e.key==='Enter')el('signinBtn').click()});
 el('signoutBtn').addEventListener('click',()=>{localStorage.removeItem('pcdr-current-user');currentUser=null;showSignin()});
 
 el('gateForm').addEventListener('submit',async e=>{
