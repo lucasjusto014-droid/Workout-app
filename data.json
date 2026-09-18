@@ -28,10 +28,14 @@
       "name": "Jacob Webb",
       "slug": "jacob-webb",
       "active": true,
-      "photo": "photos/jacob-webb.jpg?v=1789767721457",
-      "photoX": 43,
-      "photoY": 100,
-      "photoZoom": 1
+      "photo": "photos/cropped/jacob-webb.jpg?v=1789769323391",
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1,
+      "photoOriginal": "photos/jacob-webb.jpg?v=1789767721457",
+      "cropX": 35,
+      "cropY": 63,
+      "cropZoom": 1
     },
     {
       "name": "Brooks Belisle",
