@@ -96,7 +96,8 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
         </div>
         <div class="panel">
           <h3>Roster & ranking controls</h3>
-          <div class="tag">Remove/restore people, change photos or names, reset visible votes, and add a manual score adjustment. Shared changes only apply when the GitHub command is submitted from your owner account.</div>
+          <div class="tag">Add/remove/restore people, change rankings, edit photos or names, and reset visible votes. Shared changes only apply when the GitHub command is submitted from your owner account.</div>
+          <button id="addPersonBtn" class="btn primary small" style="margin-top:10px">+ Add Person</button>
           <div id="adminRoster" class="admin-list"></div>
         </div>
       </div>
@@ -296,7 +297,7 @@ function renderAdminRoster(){
     const scoreText=m.loaded?('base '+baseScore(m)+' · adjustment '+(adj>=0?'+':'')+adj+' · final '+score(m)):('adjustment '+(adj>=0?'+':'')+adj);
     return '<div class="admin-row"><div><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+'</span></div>'+
       '<div class="admin-actions">'+
-      '<button class="btn small" onclick="adminAdjust(\''+m.slug+'\')">Rank</button>'+
+      '<button class="btn small" onclick="adminAdjust(\''+m.slug+'\')">Change Rank</button>'+
       '<button class="btn small" onclick="adminPhoto(\''+m.slug+'\')">Photo</button>'+
       '<button class="btn small" onclick="adminRename(\''+m.slug+'\')">Name</button>'+
       '<button class="btn small" onclick="adminResetVotes(\''+m.slug+'\')">Reset Votes</button>'+
@@ -308,6 +309,18 @@ function openOwnerCommand(title,body,message){
   window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
   toast(message||'Submit the GitHub issue from your owner account to apply the change.');
 }
+function adminAdd(){
+  if(!adminUnlocked)return;
+  const name=prompt('Name of the new pledge:');
+  if(!name||!name.trim())return;
+  const clean=name.trim().replace(/\s+/g,' ');
+  const slug=clean.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  if(!slug){toast('Enter a valid name.');return}
+  if(memberBySlug(slug)){toast('That person already exists.');return}
+  openOwnerCommand('PCDR Admin Add: '+slug,'name: '+clean+'\n','Submit the owner command to add '+clean+'.');
+}
+el('addPersonBtn').addEventListener('click',adminAdd);
+
 function adminDelete(slug){
   if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m||!confirm('Remove '+m.name+' from the public PC roster?'))return;
   openOwnerCommand('PCDR Admin Delete: '+slug,'Owner-only PC Doosh Rankings admin command.\n\nRemove **'+m.name+'** from the public roster.','Submit the owner command to remove '+m.name+'.');
