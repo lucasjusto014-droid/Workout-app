@@ -79,7 +79,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     </section>
 
     <section id="pvp" class="view">
-      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. A fresh matchup appears immediately after every vote.</p></div><div class="status">HEAD-TO-HEAD · v2</div></div>
+      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. The site rotates through the whole PC before reshuffling.</p></div><div class="status">HEAD-TO-HEAD · v2</div></div>
       <div class="pvp-wrap">
         <div id="pvpStage" class="pvp-stage">
           <div class="pvp-card"><div class="tag">Loading matchup…</div></div>
@@ -186,7 +186,7 @@ const ACCESS_ANSWERS={
  q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
  q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
-let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpPreviousSlugs=[],pvpBusy=false,pvpStats=new Map();
+let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpQueue=[],pvpBusy=false,pvpStats=new Map();
 const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
 localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
@@ -321,16 +321,23 @@ async function loadPvpStat(m){
   }catch(e){s.loaded=true}
   return s;
 }
+function shufflePvpQueue(){
+  pvpQueue=activeMembers().slice();
+  for(let i=pvpQueue.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pvpQueue[i],pvpQueue[j]]=[pvpQueue[j],pvpQueue[i]];
+  }
+}
 function choosePvpPair(){
   const pool=activeMembers();
   if(pool.length<2){pvpPair=[];renderPvp();return}
-  const fresh=pool.filter(m=>!pvpPreviousSlugs.includes(m.slug));
-  const source=fresh.length>=2?fresh:pool;
-  let a=source[Math.floor(Math.random()*source.length)];
-  let b;
-  do{b=source[Math.floor(Math.random()*source.length)]}while(b.slug===a.slug);
+  const activeSlugs=new Set(pool.map(m=>m.slug));
+  pvpQueue=pvpQueue.filter(m=>activeSlugs.has(m.slug));
+  if(pvpQueue.length<2)shufflePvpQueue();
+  const a=pvpQueue.shift();
+  let b=pvpQueue.shift();
+  if(!a||!b){shufflePvpQueue();return choosePvpPair()}
   pvpPair=[a,b];
-  pvpPreviousSlugs=[a.slug,b.slug];
   renderPvp();
   Promise.all([loadPvpStat(a),loadPvpStat(b)]).then(()=>{renderPvp();renderPvpLeaders()});
 }
