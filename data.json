@@ -419,11 +419,18 @@
       "name": "Amir Valizedah",
       "slug": "amir-valizedah",
       "active": true,
-      "photo": "photos/amir-valizedah.jpg?v=1789767752540",
+      "photo": "photos/cropped/amir-valizedah.jpg?v=1789769902264",
       "rankOverride": 0,
       "adminAdjustment": 0,
       "upOffset": 0,
-      "downOffset": 0
+      "downOffset": 0,
+      "photoOriginal": "photos/amir-valizedah.jpg?v=1789767752540",
+      "cropX": 50,
+      "cropY": 50,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Sam Atwater",
