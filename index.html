@@ -557,11 +557,40 @@ function b64Utf8(str){
   let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));
   return btoa(binary);
 }
+function decodeRepoJson(meta){
+  const clean=(meta.content||'').replace(/\n/g,'');
+  const bytes=Uint8Array.from(atob(clean),ch=>ch.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
 async function fetchRepoData(){
   const meta=await ghRequest('contents/data.json?ref=main');
-  const clean=(meta.content||'').replace(/\n/g,'');
-  const text=decodeURIComponent(escape(atob(clean)));
-  return {data:JSON.parse(text),sha:meta.sha};
+  return {data:decodeRepoJson(meta),sha:meta.sha};
+}
+function applyCommittedRoster(data){
+  const previousBySlug=new Map(members.map(m=>[m.slug,m]));
+  members=(data.members||[]).map(m=>{
+    const prev=previousBySlug.get(m.slug)||{};
+    return {
+      ...m,
+      adminAdjustment:Number(m.adminAdjustment||0),
+      rankOverride:Number(m.rankOverride||0),
+      upOffset:Number(m.upOffset||0),
+      downOffset:Number(m.downOffset||0),
+      up:Number(prev.up||0),
+      down:Number(prev.down||0),
+      upUndo:Number(prev.upUndo||0),
+      downUndo:Number(prev.downUndo||0),
+      loaded:!!prev.loaded
+    };
+  });
+  renderRankings();
+  renderMembers();
+  renderAdminRoster();
+  if(el('pvp')&&el('pvp').classList.contains('active')){
+    pvpQueue=[];
+    choosePvpPair();
+    renderPvpLeaders();
+  }
 }
 async function saveRepoData(data,sha,message){
   return ghRequest('contents/data.json',{
@@ -578,33 +607,8 @@ async function mutateRepoData(message,mutator){
     if(changed===false)return false;
     await saveRepoData(latest.data,latest.sha,message);
 
-    // Use the data we just committed immediately. Do NOT reload data.json from
-    // GitHub Pages here because Pages may still be serving the previous deploy.
-    const previousBySlug=new Map(members.map(m=>[m.slug,m]));
-    members=(latest.data.members||[]).map(m=>{
-      const prev=previousBySlug.get(m.slug)||{};
-      return {
-        ...m,
-        adminAdjustment:Number(m.adminAdjustment||0),
-        rankOverride:Number(m.rankOverride||0),
-        upOffset:Number(m.upOffset||0),
-        downOffset:Number(m.downOffset||0),
-        up:Number(prev.up||0),
-        down:Number(prev.down||0),
-        upUndo:Number(prev.upUndo||0),
-        downUndo:Number(prev.downUndo||0),
-        loaded:!!prev.loaded
-      };
-    });
-
-    renderRankings();
-    renderMembers();
-    renderAdminRoster();
-    if(el('pvp')&&el('pvp').classList.contains('active')){
-      pvpQueue=[];
-      choosePvpPair();
-      renderPvpLeaders();
-    }
+    // Use the exact data we just committed instead of waiting for Pages deployment.
+    applyCommittedRoster(latest.data);
     toast('Saved.');
     return true;
   }catch(e){
@@ -723,38 +727,95 @@ el('cancelCropBtn').addEventListener('click',()=>{
   el('cropModal').classList.remove('show');cropTarget=null;cropSourceImage=null;
   if(cropSourceUrl){URL.revokeObjectURL(cropSourceUrl);cropSourceUrl=''}
 });
+
+async function saveCropAtomic(target,blob,x,y,z){
+  const imageBase64=await fileToBase64(blob);
+  const imageBlob=await ghRequest('git/blobs',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({content:imageBase64,encoding:'base64'})
+  });
+
+  let lastError=null;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      // Bind data.json and the new commit to the exact same main-branch head.
+      const ref=await ghRequest('git/ref/heads/main');
+      const headSha=ref.object.sha;
+      const headCommit=await ghRequest('git/commits/'+headSha);
+      const dataMeta=await ghRequest('contents/data.json?ref='+encodeURIComponent(headSha));
+      const data=decodeRepoJson(dataMeta);
+      const m=(data.members||[]).find(item=>item.slug===target.slug);
+      if(!m)throw new Error('Member not found');
+
+      const originalSource=m.photoOriginal||target.photoOriginal||m.photo||target.photo;
+      const version=Date.now();
+      if(!m.photoOriginal)m.photoOriginal=originalSource;
+      m.photo='photos/cropped/'+target.slug+'.jpg?v='+version;
+      m.cropX=x;m.cropY=y;m.cropZoom=z;
+      m.photoX=50;m.photoY=50;m.photoZoom=1;
+
+      const dataBlob=await ghRequest('git/blobs',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({content:b64Utf8(JSON.stringify(data,null,2)+'\n'),encoding:'base64'})
+      });
+      const tree=await ghRequest('git/trees',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          base_tree:headCommit.tree.sha,
+          tree:[
+            {path:'photos/cropped/'+target.slug+'.jpg',mode:'100644',type:'blob',sha:imageBlob.sha},
+            {path:'data.json',mode:'100644',type:'blob',sha:dataBlob.sha}
+          ]
+        })
+      });
+      const commit=await ghRequest('git/commits',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          message:'Save crop for '+target.name,
+          tree:tree.sha,
+          parents:[headSha]
+        })
+      });
+      await ghRequest('git/refs/heads/main',{
+        method:'PATCH',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({sha:commit.sha,force:false})
+      });
+
+      applyCommittedRoster(data);
+      return true;
+    }catch(e){
+      lastError=e;
+      // A simultaneous Master edit can move main between read and update. Retry cleanly.
+      if(!(e.status===409||e.status===422))break;
+      await new Promise(r=>setTimeout(r,250*(attempt+1)));
+    }
+  }
+  throw lastError||new Error('Crop save failed');
+}
+
 el('saveCropBtn').addEventListener('click',async()=>{
   if(!cropTarget||!cropSourceImage)return;
   const btn=el('saveCropBtn'),originalText=btn.textContent;
-  btn.disabled=true;btn.textContent='Uploading crop…';
+  btn.disabled=true;btn.textContent='Saving crop…';
   const target=cropTarget;
+  const x=Number(el('cropX').value),y=Number(el('cropY').value),z=Number(el('cropZoom').value);
   try{
     const canvas=el('cropPreviewCanvas');
     const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Crop failed')),'image/jpeg',0.9));
-    const path='photos/cropped/'+target.slug+'.jpg';
-    await putRepoFile(path,blob,'Save cropped photo for '+target.name);
-    const originalSource=target.photoOriginal||target.photo;
-    const version=Date.now();
-    const ok=await mutateRepoData('Use cropped photo for '+target.name,data=>{
-      const m=(data.members||[]).find(x=>x.slug===target.slug);if(!m)return false;
-      if(!m.photoOriginal)m.photoOriginal=originalSource;
-      m.photo=path+'?v='+version;
-      m.cropX=Number(el('cropX').value);
-      m.cropY=Number(el('cropY').value);
-      m.cropZoom=Number(el('cropZoom').value);
-      // Actual saved image is already cropped, so display it without a second CSS crop.
-      m.photoX=50;m.photoY=50;m.photoZoom=1;
-      return true;
-    });
-    if(ok){
-      el('cropModal').classList.remove('show');
-      cropTarget=null;cropSourceImage=null;
-      if(cropSourceUrl){URL.revokeObjectURL(cropSourceUrl);cropSourceUrl=''}
-      toast('Crop saved as the actual photo.');
-    }
+    await saveCropAtomic(target,blob,x,y,z);
+
+    el('cropModal').classList.remove('show');
+    cropTarget=null;cropSourceImage=null;
+    if(cropSourceUrl){URL.revokeObjectURL(cropSourceUrl);cropSourceUrl=''}
+    toast('Crop saved. You can crop another person now.');
   }catch(e){
     console.error(e);
-    toast('Crop upload failed. Check GitHub connection.');
+    toast('Crop save failed. Try again.');
   }finally{
     btn.disabled=false;btn.textContent=originalText;
   }
