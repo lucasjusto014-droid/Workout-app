@@ -26,7 +26,8 @@ nav{display:flex;gap:3px}nav button,.navbtn{border:0;background:transparent;colo
 .admin-grid{display:grid;grid-template-columns:minmax(250px,.78fr) minmax(0,1.65fr);gap:14px;align-items:start}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0;overflow:hidden}.panel h3{margin:0 0 5px;font-size:20px}.admin-list{max-height:680px;overflow-y:auto;overflow-x:hidden;margin-top:12px;padding-right:4px}.admin-row{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 10px;border-bottom:1px solid #25252b}.admin-row:last-child{border:0}.admin-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-start;width:100%}.admin-actions .btn{flex:0 0 auto;white-space:nowrap;font-size:11px;padding:7px 9px}.admin-list::-webkit-scrollbar{width:8px}.admin-list::-webkit-scrollbar-thumb{background:#34343c;border-radius:999px}.admin-list::-webkit-scrollbar-track{background:transparent}
 .modal,.screen{position:fixed;inset:0;z-index:80;background:rgba(3,3,5,.84);backdrop-filter:blur(7px);display:none;place-items:center;padding:20px}.modal.show,.screen.show{display:grid}.card{width:min(580px,100%);background:#121216;border:1px solid #34343c;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 5px;letter-spacing:-.04em}.card .sub{color:var(--muted);margin:0 0 18px}.formrow{margin:13px 0}.formrow label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}.error{color:#ff8a84;min-height:20px;font-size:12px;font-weight:800;margin-top:8px}
 .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#251516,#0a0a0d 40%,#070709);display:grid;place-items:center;padding:20px}.gate .card{width:min(620px,100%)}.gate-logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);font-size:24px;font-weight:1000;margin-bottom:16px}
-.dropzone{border:1.5px dashed #474751;border-radius:14px;padding:26px;text-align:center;background:#0d0d10;color:#aaaab4}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff}.preview{display:none;gap:10px;align-items:center;margin-top:12px;border:1px solid var(--line);padding:10px;border-radius:12px}.preview.show{display:flex}.preview img{width:62px;height:62px;object-fit:cover;border-radius:9px}.preview span{display:block;color:var(--muted);font-size:12px}.crop-preview{width:min(320px,82vw);aspect-ratio:1;border-radius:24px;overflow:hidden;margin:14px auto;background:#0d0d10;border:1px solid #34343c}.crop-preview img{width:100%;height:100%;object-fit:cover;display:block}.crop-control{margin:12px 0}.crop-control label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:850;margin-bottom:5px}.crop-control input[type="range"]{width:100%}
+.dropzone{border:1.5px dashed #474751;border-radius:14px;padding:26px;text-align:center;background:#0d0d10;color:#aaaab4}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff}.preview{display:none;gap:10px;align-items:center;margin-top:12px;border:1px solid var(--line);padding:10px;border-radius:12px}.preview.show{display:flex}.preview img{width:62px;height:62px;object-fit:cover;border-radius:9px}.preview span{display:block;color:var(--muted);font-size:12px}.crop-card{width:min(720px,96vw)!important;max-height:calc(100vh - 28px);overflow-y:auto;padding:20px!important}.crop-layout{display:grid;grid-template-columns:minmax(260px,1fr) minmax(220px,.8fr);gap:18px;align-items:start}.crop-main{min-width:0}.crop-preview{position:relative;width:min(390px,100%);aspect-ratio:1;border-radius:24px;overflow:hidden;margin:8px auto;background:#0d0d10;border:1px solid #34343c;touch-action:none;cursor:grab}.crop-preview.dragging{cursor:grabbing}.crop-preview img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}.crop-guide{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent 32.8%,rgba(255,255,255,.15) 33%,rgba(255,255,255,.15) 33.4%,transparent 33.6%,transparent 66.2%,rgba(255,255,255,.15) 66.4%,rgba(255,255,255,.15) 66.8%,transparent 67%),linear-gradient(to bottom,transparent 32.8%,rgba(255,255,255,.15) 33%,rgba(255,255,255,.15) 33.4%,transparent 33.6%,transparent 66.2%,rgba(255,255,255,.15) 66.4%,rgba(255,255,255,.15) 66.8%,transparent 67%)}.crop-help{text-align:center;color:var(--muted);font-size:11px;margin:7px 0 0}.crop-control{margin:12px 0}.crop-control label{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:850;margin-bottom:5px}.crop-control input[type="range"]{width:100%}.crop-results{background:#0d0d10;border:1px solid #2d2d35;border-radius:15px;padding:14px;position:sticky;top:0}.crop-results h4{margin:0 0 4px;font-size:14px}.crop-results .tag{margin-bottom:12px}.crop-result-row{display:flex;align-items:center;gap:12px;margin:10px 0}.crop-result-box{overflow:hidden;background:#17171c;border:1px solid #34343c;flex:0 0 auto}.crop-result-box.small{width:58px;height:58px;border-radius:13px}.crop-result-box.large{width:128px;height:128px;border-radius:28px}.crop-result-box img{width:100%;height:100%;object-fit:cover;display:block}.crop-result-label strong{display:block}.crop-result-label span{font-size:11px;color:var(--muted)}#cropModal .modal-actions{position:sticky;bottom:-1px;background:linear-gradient(180deg,rgba(18,18,22,0),#121216 28%);padding-top:18px;padding-bottom:2px;z-index:2}
+@media(max-width:700px){.crop-card{max-height:calc(100vh - 12px);padding:15px!important}.crop-layout{grid-template-columns:1fr}.crop-preview{width:min(330px,86vw)}.crop-results{position:static}.crop-result-row{justify-content:center;text-align:left}}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}.note{color:#888893;font-size:11px;margin-top:12px}.toast{position:fixed;left:50%;bottom:20px;z-index:120;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;border-radius:10px;padding:10px 14px;box-shadow:var(--shadow);transition:.2s;max-width:min(520px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
 footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;color:#767680;font-size:11px}
 @media(max-width:1050px){.admin-grid{grid-template-columns:1fr}.admin-list{max-height:none}.admin-actions .btn{font-size:11px}.admin-person-text span{white-space:normal;overflow:visible;text-overflow:clip}}
@@ -178,13 +179,30 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
 </div>
 
 <div id="cropModal" class="modal">
-  <div class="card">
+  <div class="card crop-card">
     <h3 id="cropTitle">Crop Photo</h3>
-    <p class="sub">Move the frame until the face is centered. This changes how the photo is displayed; it does not alter the original file.</p>
-    <div class="crop-preview"><img id="cropPreviewImg" alt=""></div>
-    <div class="crop-control"><label><span>Horizontal</span><span id="cropXValue">50%</span></label><input id="cropX" type="range" min="0" max="100" step="1" value="50"></div>
-    <div class="crop-control"><label><span>Vertical</span><span id="cropYValue">50%</span></label><input id="cropY" type="range" min="0" max="100" step="1" value="50"></div>
-    <div class="crop-control"><label><span>Zoom</span><span id="cropZoomValue">1.00×</span></label><input id="cropZoom" type="range" min="1" max="2.5" step="0.05" value="1"></div>
+    <p class="sub">Drag the photo to move it. Use Zoom to bring the face in closer. The previews on the right are exactly how it will look on the site.</p>
+    <div class="crop-layout">
+      <div class="crop-main">
+        <div id="cropPreview" class="crop-preview"><img id="cropPreviewImg" alt=""><div class="crop-guide"></div></div>
+        <div class="crop-help">Drag directly on the photo to reposition it.</div>
+        <div class="crop-control"><label><span>Horizontal</span><span id="cropXValue">50%</span></label><input id="cropX" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="crop-control"><label><span>Vertical</span><span id="cropYValue">50%</span></label><input id="cropY" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="crop-control"><label><span>Zoom</span><span id="cropZoomValue">1.00×</span></label><input id="cropZoom" type="range" min="1" max="3.5" step="0.05" value="1"></div>
+      </div>
+      <div class="crop-results">
+        <h4>Actual site result</h4>
+        <div class="tag">These update live while you crop.</div>
+        <div class="crop-result-row">
+          <div class="crop-result-box small"><img id="cropResultSmall" alt=""></div>
+          <div class="crop-result-label"><strong>Rankings / Master</strong><span>58 × 58 preview</span></div>
+        </div>
+        <div class="crop-result-row">
+          <div class="crop-result-box large"><img id="cropResultLarge" alt=""></div>
+          <div class="crop-result-label"><strong>Doosh PvP</strong><span>128 × 128 preview</span></div>
+        </div>
+      </div>
+    </div>
     <div class="modal-actions"><button id="resetCropBtn" class="btn">Reset</button><button id="cancelCropBtn" class="btn">Cancel</button><button id="saveCropBtn" class="btn primary">Save Crop</button></div>
   </div>
 </div>
@@ -597,15 +615,20 @@ function renderAdminRoster(){
   }).join('');
 }
 
-function updateCropPreview(){
-  if(!cropTarget)return;
-  const x=Number(el('cropX').value),y=Number(el('cropY').value),z=Number(el('cropZoom').value);
-  const img=el('cropPreviewImg');
+function applyCropStyle(img,x,y,z){
+  if(!img)return;
   img.style.objectPosition=x+'% '+y+'%';
   img.style.transform='scale('+z+')';
   img.style.transformOrigin=x+'% '+y+'%';
-  el('cropXValue').textContent=x+'%';
-  el('cropYValue').textContent=y+'%';
+}
+function updateCropPreview(){
+  if(!cropTarget)return;
+  const x=Number(el('cropX').value),y=Number(el('cropY').value),z=Number(el('cropZoom').value);
+  applyCropStyle(el('cropPreviewImg'),x,y,z);
+  applyCropStyle(el('cropResultSmall'),x,y,z);
+  applyCropStyle(el('cropResultLarge'),x,y,z);
+  el('cropXValue').textContent=Math.round(x)+'%';
+  el('cropYValue').textContent=Math.round(y)+'%';
   el('cropZoomValue').textContent=z.toFixed(2)+'×';
 }
 function adminCrop(slug){
@@ -613,7 +636,7 @@ function adminCrop(slug){
   const m=memberBySlug(slug);if(!m||!m.photo){toast('No photo to crop.');return}
   cropTarget=m;
   el('cropTitle').textContent='Crop '+m.name;
-  el('cropPreviewImg').src=m.photo;
+  [el('cropPreviewImg'),el('cropResultSmall'),el('cropResultLarge')].forEach(img=>img.src=m.photo);
   el('cropX').value=Number.isFinite(Number(m.photoX))?Number(m.photoX):50;
   el('cropY').value=Number.isFinite(Number(m.photoY))?Number(m.photoY):50;
   el('cropZoom').value=Number.isFinite(Number(m.photoZoom))?Number(m.photoZoom):1;
@@ -621,6 +644,31 @@ function adminCrop(slug){
   el('cropModal').classList.add('show');
 }
 ['cropX','cropY','cropZoom'].forEach(id=>el(id).addEventListener('input',updateCropPreview));
+
+let cropDrag=null;
+el('cropPreview').addEventListener('pointerdown',e=>{
+  if(!cropTarget)return;
+  cropDrag={x:e.clientX,y:e.clientY,startX:Number(el('cropX').value),startY:Number(el('cropY').value)};
+  el('cropPreview').classList.add('dragging');
+  el('cropPreview').setPointerCapture(e.pointerId);
+});
+el('cropPreview').addEventListener('pointermove',e=>{
+  if(!cropDrag)return;
+  const rect=el('cropPreview').getBoundingClientRect();
+  const dx=e.clientX-cropDrag.x,dy=e.clientY-cropDrag.y;
+  const nextX=Math.max(0,Math.min(100,cropDrag.startX-(dx/rect.width)*100));
+  const nextY=Math.max(0,Math.min(100,cropDrag.startY-(dy/rect.height)*100));
+  el('cropX').value=nextX;
+  el('cropY').value=nextY;
+  updateCropPreview();
+});
+function endCropDrag(){
+  cropDrag=null;
+  el('cropPreview').classList.remove('dragging');
+}
+el('cropPreview').addEventListener('pointerup',endCropDrag);
+el('cropPreview').addEventListener('pointercancel',endCropDrag);
+
 el('resetCropBtn').addEventListener('click',()=>{
   el('cropX').value=50;el('cropY').value=50;el('cropZoom').value=1;updateCropPreview();
 });
