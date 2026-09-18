@@ -79,13 +79,13 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     </section>
 
     <section id="pvp" class="view">
-      <div class="section-head"><div><h2>Doosh PvP</h2><p>Two pledges enter. Pick who is dooshier.</p></div><div class="status">HEAD-TO-HEAD</div></div>
+      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. A fresh matchup appears immediately after every vote.</p></div><div class="status">HEAD-TO-HEAD</div></div>
       <div class="pvp-wrap">
         <div id="pvpStage" class="pvp-stage">
           <div class="pvp-card"><div class="tag">Loading matchup…</div></div>
         </div>
         <div class="pvp-bottom">
-          <div class="tag">PvP is separate from the main upvote/downvote rankings.</div>
+          <div class="tag">Every PvP result counts toward the main rankings: winner +1 upvote, loser +1 downvote.</div>
           <button id="skipPvpBtn" class="btn small">Skip Matchup</button>
         </div>
         <div class="pvp-leaderboard">
@@ -186,7 +186,7 @@ const ACCESS_ANSWERS={
  q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
  q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
-let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpBusy=false,pvpStats=new Map();
+let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpPreviousSlugs=[],pvpBusy=false,pvpStats=new Map();
 const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
 localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
@@ -324,16 +324,13 @@ async function loadPvpStat(m){
 function choosePvpPair(){
   const pool=activeMembers();
   if(pool.length<2){pvpPair=[];renderPvp();return}
-  const lastKey=localStorage.getItem('pcdr-last-pvp-pair')||'';
-  let a,b,key,tries=0;
-  do{
-    a=pool[Math.floor(Math.random()*pool.length)];
-    do{b=pool[Math.floor(Math.random()*pool.length)]}while(b.slug===a.slug);
-    key=[a.slug,b.slug].sort().join('|');
-    tries++;
-  }while(key===lastKey&&tries<15);
+  const fresh=pool.filter(m=>!pvpPreviousSlugs.includes(m.slug));
+  const source=fresh.length>=2?fresh:pool;
+  let a=source[Math.floor(Math.random()*source.length)];
+  let b;
+  do{b=source[Math.floor(Math.random()*source.length)]}while(b.slug===a.slug);
   pvpPair=[a,b];
-  localStorage.setItem('pcdr-last-pvp-pair',key);
+  pvpPreviousSlugs=[a.slug,b.slug];
   renderPvp();
   Promise.all([loadPvpStat(a),loadPvpStat(b)]).then(()=>{renderPvp();renderPvpLeaders()});
 }
@@ -355,19 +352,27 @@ async function pickDooshier(winnerSlug){
   if(!winner||!loser)return;
   pvpBusy=true;renderPvp();
   try{
-    const [w,l]=await Promise.all([
+    const [pvpWinRes,pvpLossRes,upRes,downRes]=await Promise.all([
       fetch(counterUrl('pvpwin',winner.slug,false,DEVICE_ID),{cache:'no-store'}),
-      fetch(counterUrl('pvploss',loser.slug,false,DEVICE_ID),{cache:'no-store'})
+      fetch(counterUrl('pvploss',loser.slug,false,DEVICE_ID),{cache:'no-store'}),
+      fetch(counterUrl('upvote',winner.slug,false,DEVICE_ID),{cache:'no-store'}),
+      fetch(counterUrl('downvote',loser.slug,false,DEVICE_ID),{cache:'no-store'})
     ]);
-    if(!w.ok||!l.ok)throw 0;
-    const [wd,ld]=await Promise.all([w.json(),l.json()]);
+    if(!pvpWinRes.ok||!pvpLossRes.ok||!upRes.ok||!downRes.ok)throw 0;
+    const [pvpWinData,pvpLossData,upData,downData]=await Promise.all([
+      pvpWinRes.json(),pvpLossRes.json(),upRes.json(),downRes.json()
+    ]);
     const ws=pvpStat(winner.slug),ls=pvpStat(loser.slug);
-    ws.wins=Number(wd.value)||ws.wins+1;ws.loaded=true;
-    ls.losses=Number(ld.value)||ls.losses+1;ls.loaded=true;
-    toast(winner.name+' wins the matchup.');
+    ws.wins=Number(pvpWinData.value)||ws.wins+1;ws.loaded=true;
+    ls.losses=Number(pvpLossData.value)||ls.losses+1;ls.loaded=true;
+    winner.up=Number(upData.value)||winner.up+1;
+    loser.down=Number(downData.value)||loser.down+1;
+    winner.loaded=true;loser.loaded=true;
     pvpBusy=false;
+    renderRankings();
+    renderMembers();
     renderPvpLeaders();
-    setTimeout(choosePvpPair,260);
+    choosePvpPair();
   }catch(e){
     pvpBusy=false;renderPvp();toast('PvP vote did not go through. Try again.');
   }
