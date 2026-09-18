@@ -165,7 +165,14 @@
       "name": "Matias Espina",
       "slug": "matias",
       "active": true,
-      "photo": "photos/matias.jpg?v=1789767727249"
+      "photo": "photos/cropped/matias.jpg?v=1789769969068",
+      "photoOriginal": "photos/matias.jpg?v=1789767727249",
+      "cropX": 50,
+      "cropY": 50,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Gabe Detraux",
