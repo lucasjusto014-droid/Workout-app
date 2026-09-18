@@ -514,11 +514,18 @@
       "name": "CJ",
       "slug": "cj",
       "active": true,
-      "photo": "photos/cj.jpg?v=1789767719154",
+      "photo": "photos/cropped/cj.jpg?v=1789770096728",
       "rankOverride": 0,
       "adminAdjustment": 0,
       "upOffset": 0,
-      "downOffset": 0
+      "downOffset": 0,
+      "photoOriginal": "photos/cj.jpg?v=1789767719154",
+      "cropX": 50,
+      "cropY": 50,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Warden Schulte",
