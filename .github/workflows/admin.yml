@@ -12,7 +12,8 @@ jobs:
   admin-command:
     if: >
       github.actor == 'lucasjusto014-droid' &&
-      (startsWith(github.event.issue.title, 'PCDR Admin Delete:') ||
+      (startsWith(github.event.issue.title, 'PCDR Admin Add:') ||
+       startsWith(github.event.issue.title, 'PCDR Admin Delete:') ||
        startsWith(github.event.issue.title, 'PCDR Admin Restore:') ||
        startsWith(github.event.issue.title, 'PCDR Admin Photo:') ||
        startsWith(github.event.issue.title, 'PCDR Admin Adjust:') ||
@@ -45,7 +46,137 @@ jobs:
           def find_member(slug):
               return next((m for m in members if m.get("slug") == slug), None)
 
-          if title.startswith("PCDR Admin Delete:"):
+          if title.startswith("PCDR Admin Add:"):
+              slug = title.split(":", 1)[1].strip()
+              name_match = re.search(r'(?im)^name:\s*(.+?)\s*              slug = title.split(":", 1)[1].strip()
+              member = find_member(slug)
+              if member:
+                  member["active"] = False
+                  changed = True
+                  message = f"Removed {member.get('name', slug)} from the public roster."
+              else:
+                  message = f"No roster member matched slug: {slug}"
+
+          elif title.startswith("PCDR Admin Restore:"):
+              slug = title.split(":", 1)[1].strip()
+              member = find_member(slug)
+              if member:
+                  member["active"] = True
+                  changed = True
+                  message = f"Restored {member.get('name', slug)} to the public roster."
+              else:
+                  message = f"No roster member matched slug: {slug}"
+
+          elif title.startswith("PCDR Admin Photo:"):
+              slug = title.split(":", 1)[1].strip()
+              member = find_member(slug)
+              urls = re.findall(r'https://github\.com/user-attachments/assets/[A-Za-z0-9-]+(?:\?[^\s)]+)?', body)
+              if not urls:
+                  urls = re.findall(r'https?://[^\s)]+', body)
+              image_url = urls[0] if urls else None
+              if not member:
+                  message = f"No roster member matched slug: {slug}"
+              elif not image_url:
+                  message = "No image URL was found. Attach an image before submitting the issue."
+              else:
+                  member["photo"] = image_url
+                  changed = True
+                  message = f"Updated the photo for {member.get('name', slug)}."
+
+          elif title.startswith("PCDR Admin Adjust:"):
+              slug = title.split(":", 1)[1].strip()
+              member = find_member(slug)
+              match = re.search(r'(?im)^adjustment:\s*(-?\d+)\s*$', body)
+              if not member:
+                  message = f"No roster member matched slug: {slug}"
+              elif not match:
+                  message = "No valid adjustment was found. Use a line like: adjustment: 3"
+              else:
+                  value = max(-999, min(999, int(match.group(1))))
+                  member["adminAdjustment"] = value
+                  changed = True
+                  message = f"Set ranking adjustment for {member.get('name', slug)} to {value:+d}."
+
+          elif title.startswith("PCDR Admin Rename:"):
+              slug = title.split(":", 1)[1].strip()
+              member = find_member(slug)
+              match = re.search(r'(?im)^name:\s*(.+?)\s*$', body)
+              if not member:
+                  message = f"No roster member matched slug: {slug}"
+              elif not match:
+                  message = "No new display name was found. Use a line like: name: New Name"
+              else:
+                  new_name = match.group(1).strip()[:80]
+                  member["name"] = new_name
+                  changed = True
+                  message = f"Renamed roster display name to {new_name}."
+
+          elif title.startswith("PCDR Admin Reset Votes:"):
+              slug = title.split(":", 1)[1].strip()
+              member = find_member(slug)
+              up = re.search(r'(?im)^up:\s*(\d+)\s*$', body)
+              down = re.search(r'(?im)^down:\s*(\d+)\s*$', body)
+              if not member:
+                  message = f"No roster member matched slug: {slug}"
+              elif not up or not down:
+                  message = "Reset request is missing up/down values."
+              else:
+                  member["upOffset"] = int(member.get("upOffset", 0)) + int(up.group(1))
+                  member["downOffset"] = int(member.get("downOffset", 0)) + int(down.group(1))
+                  changed = True
+                  message = f"Reset visible vote totals for {member.get('name', slug)}."
+
+          if changed:
+              with open(path, "w", encoding="utf-8") as f:
+                  json.dump(data, f, indent=2)
+                  f.write("\n")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"changed={'true' if changed else 'false'}\n")
+              out.write("message<<EOF\n")
+              out.write(message + "\n")
+              out.write("EOF\n")
+          PY
+
+      - name: Commit roster change
+        if: steps.apply.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "Apply PC Doosh Rankings admin change"
+          git push
+
+      - name: Comment result
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RESULT_MESSAGE: ${{ steps.apply.outputs.message }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "$RESULT_MESSAGE"
+          if [ "${{ steps.apply.outputs.changed }}" = "true" ]; then
+            gh issue close "$ISSUE_NUMBER"
+          fi
+, body)
+              if find_member(slug):
+                  message = f"A roster member already uses slug: {slug}"
+              elif not name_match:
+                  message = "No name was found. Use a line like: name: New Person"
+              else:
+                  new_name = name_match.group(1).strip()[:80]
+                  members.append({
+                      "name": new_name,
+                      "slug": slug,
+                      "active": True,
+                      "photo": None,
+                      "adminAdjustment": 0,
+                      "upOffset": 0,
+                      "downOffset": 0
+                  })
+                  changed = True
+                  message = f"Added {new_name} to the public roster."
+
+          elif title.startswith("PCDR Admin Delete:"):
               slug = title.split(":", 1)[1].strip()
               member = find_member(slug)
               if member:
