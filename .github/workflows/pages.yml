@@ -1,4 +1,4 @@
-name: Deploy Douche Rankings to Pages
+name: Deploy Doosh Rankings to Pages
 on:
   push:
     branches: ["main"]
