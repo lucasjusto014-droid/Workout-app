@@ -435,6 +435,16 @@
       "adminAdjustment": 0,
       "upOffset": 0,
       "downOffset": 0
+    },
+    {
+      "name": "Warden Schulte",
+      "slug": "warden-schulte",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
     }
   ]
 }
