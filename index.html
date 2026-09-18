@@ -679,7 +679,7 @@ function renderAdminRoster(){
     const active=m.active!==false;
     const actualRank=active?order.findIndex(x=>x.slug===m.slug)+1:0;
     const manual=Number(m.rankOverride)||0;
-    const scoreText=m.loaded?('rank #'+actualRank+' · score '+displayScore(m)+(manual?' · forced #'+manual:'')):((manual?'forced #'+manual:'votes loading'));
+    const scoreText=m.loaded?('rank #'+actualRank+' · score '+score(m).toFixed(2)+' · public '+displayScore(m)+(manual?' · forced #'+manual:'')):((manual?'forced #'+manual:'votes loading'));
     return '<div class="admin-row"><div class="admin-person"><div class="avatar">'+avatarHTML(m)+'</div><div class="admin-person-text"><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+(m.photo?' · photo loaded':' · NO PHOTO')+'</span></div></div>'+
       '<div class="admin-actions">'+
       '<button class="btn small" onclick="adminSetRank(\''+m.slug+'\')">Rank</button>'+
