@@ -357,7 +357,14 @@
       "name": "Sean Vazquez",
       "slug": "sean-vasquez",
       "active": true,
-      "photo": "photos/sean-vasquez.jpg?v=1789767728301"
+      "photo": "photos/cropped/sean-vasquez.jpg?v=1789769999429",
+      "photoOriginal": "photos/sean-vasquez.jpg?v=1789767728301",
+      "cropX": 50,
+      "cropY": 50,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Andrew Loebig",
