@@ -47,19 +47,6 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
   </div>
 </div>
 
-<div id="signinScreen" class="screen">
-  <div class="card">
-    <div class="gate-logo">PC</div>
-    <h2>Sign in to the PC</h2>
-    <p class="sub">Use the email and temporary password assigned to your roster account.</p>
-    <div class="formrow"><label>Email</label><input id="signinEmail" class="field" type="email" autocomplete="username" placeholder="you@example.com"></div>
-    <div class="formrow"><label>Password</label><input id="signinPassword" class="field" type="password" autocomplete="current-password" placeholder="Password"></div>
-    <button id="signinBtn" class="btn primary" style="width:100%">Sign in</button>
-    <div id="signinError" class="error"></div>
-    <div class="note">Passwords are case-sensitive. Email matching is not case-sensitive.</div>
-  </div>
-</div>
-
 <div id="app" class="hidden">
   <div class="ticker"><span>PC DOOSH RANKINGS • UPVOTE • DOWNVOTE • SUPER UPVOTE REQUESTS • PHOTO REQUESTS • PC DOOSH RANKINGS •</span></div>
   <header>
@@ -70,9 +57,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
         <button data-view="members">Members</button>
         <button id="adminTab" class="hidden" data-view="admin">Admin</button>
       </nav>
-      <span id="who" class="who"></span>
       <button id="adminBtn" class="navbtn">Master</button>
-      <button id="signoutBtn" class="navbtn">Sign out</button>
     </div>
   </header>
 
@@ -99,11 +84,6 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     <section id="admin" class="view">
       <div class="section-head"><div><h2>Master Admin</h2><p>Owner-only controls and sign-in activity.</p></div><div class="status">MASTER</div></div>
       <div class="admin-grid">
-        <div class="panel">
-          <h3>Signed in</h3><div class="tag">Roster names that have used the sign-in screen on at least one browser.</div>
-          <button id="refreshSignins" class="btn small" style="margin-top:10px">Refresh</button>
-          <div id="signinList" class="admin-list"></div>
-        </div>
         <div class="panel">
           <h3>Roster controls</h3><div class="tag">Photo/delete commands only apply if the GitHub issue is submitted from your repository-owner account.</div>
           <div style="margin-top:10px"><button id="openSuperRequests" class="btn super small">Open Super Upvote Requests</button></div>
@@ -154,13 +134,14 @@ const ACCESS_ANSWERS={
  q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
  q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
-let members=[],authAccounts=[],currentUser=null,selectedMember=null,selectedFile=null,superTarget=null;
+let members=[],selectedMember=null,selectedFile=null,superTarget=null;
+const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
+localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
 
 function el(id){return document.getElementById(id)}
 function norm(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
 async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
-async function credentialHash(email,password){const raw=email.trim().toLowerCase()+'\n'+password;const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function initials(name){const p=name.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
 function activeMembers(){return members.filter(m=>m.active!==false)}
@@ -176,14 +157,10 @@ function counterUrl(action,slug,readOnly,userId){
 async function readCounter(action,m){try{const r=await fetch(counterUrl(action,m.slug,true),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();return Number(d.value)||0}catch(e){return 0}}
 async function loadRoster(){
   try{
-    const [rr,ar]=await Promise.all([
-      fetch('data.json?ts='+Date.now(),{cache:'no-store'}),
-      fetch('auth.json?ts='+Date.now(),{cache:'no-store'})
-    ]);
-    const d=await rr.json(),a=await ar.json();
-    members=(d.members||[]).map(m=>({...m,up:0,down:0,upUndo:0,downUndo:0,loaded:false,signin:0}));
-    authAccounts=a.accounts||[];
-  }catch(e){toast('Account data failed to load. Refresh the page.')}
+    const rr=await fetch('data.json?ts='+Date.now(),{cache:'no-store'});
+    const d=await rr.json();
+    members=(d.members||[]).map(m=>({...m,up:0,down:0,upUndo:0,downUndo:0,loaded:false}));
+  }catch(e){toast('Roster failed to load. Refresh the page.')}
 }
 async function loadVotes(){
   const list=activeMembers();
@@ -206,10 +183,9 @@ function ranked(filter=''){
   return activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>score(b)-score(a)||effectiveUp(b)-effectiveUp(a)||a.name.localeCompare(b.name));
 }
 function voteState(){
-  if(!currentUser)return {};
-  try{return JSON.parse(localStorage.getItem('pcdr-votes-'+currentUser.slug)||'{}')}catch(e){return {}}
+  try{return JSON.parse(localStorage.getItem('pcdr-votes-device')||'{}')}catch(e){return {}}
 }
-function saveVoteState(state){if(currentUser)localStorage.setItem('pcdr-votes-'+currentUser.slug,JSON.stringify(state))}
+function saveVoteState(state){localStorage.setItem('pcdr-votes-device',JSON.stringify(state))}
 function renderRankings(){
   const all=ranked(),list=ranked(el('rankSearch').value),state=voteState();
   el('rankingList').innerHTML=list.map(m=>{
@@ -245,11 +221,10 @@ function refreshStats(){
   const lead=ranked()[0];el('leaderName').textContent=lead&&lead.loaded?lead.name:'Loading…';
 }
 async function incrementAction(action,m){
-  const r=await fetch(counterUrl(action,m.slug,false,currentUser.slug),{cache:'no-store'});
+  const r=await fetch(counterUrl(action,m.slug,false,DEVICE_ID),{cache:'no-store'});
   if(!r.ok)throw 0;const d=await r.json();return Number(d.value)||0;
 }
 async function castVote(slug,dir){
-  if(!currentUser){showSignin();return}
   const m=memberBySlug(slug),state=voteState();if(!m)return;
   const old=state[slug]||null;
   try{
@@ -269,30 +244,6 @@ async function castVote(slug,dir){
     m.loaded=true;saveVoteState(state);renderRankings();renderMembers();
   }catch(e){toast('Vote change did not go through. Try again.')}
 }
-async function recordSignin(m){
-  const key='pcdr-signin-recorded-'+m.slug;if(localStorage.getItem(key)==='1')return;
-  try{await fetch(counterUrl('signin',m.slug,false,m.slug),{cache:'no-store'});localStorage.setItem(key,'1')}catch(e){}
-}
-function finishSignin(m){
-  currentUser=m;localStorage.setItem('pcdr-auth-user-v2',m.slug);recordSignin(m);el('signinScreen').classList.remove('show');el('app').classList.remove('hidden');el('who').textContent=m.name;updateAdminUI();renderRankings();renderMembers();loadVotes();
-}
-function showSignin(){
-  el('app').classList.add('hidden');el('signinScreen').classList.add('show');
-  el('signinPassword').value='';el('signinError').textContent='';
-}
-el('signinBtn').addEventListener('click',async()=>{
-  el('signinError').textContent='Checking…';
-  const email=el('signinEmail').value.trim(),password=el('signinPassword').value;
-  if(!email||!password){el('signinError').textContent='Enter both email and password.';return}
-  const ch=await credentialHash(email,password);
-  const acct=authAccounts.find(a=>a.credentialHash===ch);
-  const m=acct&&memberBySlug(acct.slug);
-  if(!m||m.active===false){el('signinError').textContent='Email or password is incorrect.';return}
-  el('signinError').textContent='';finishSignin(m);
-});
-el('signinPassword').addEventListener('keydown',e=>{if(e.key==='Enter')el('signinBtn').click()});
-el('signoutBtn').addEventListener('click',()=>{localStorage.removeItem('pcdr-auth-user-v2');currentUser=null;showSignin()});
-
 el('gateForm').addEventListener('submit',e=>{
   e.preventDefault();
   const a1=norm(el('q1').value),a2=norm(el('q2').value),a3=norm(el('q3').value);
@@ -302,16 +253,15 @@ el('gateForm').addEventListener('submit',e=>{
   if(!ACCESS_ANSWERS.q3.includes(a3)) wrong.push('Question 3');
   if(wrong.length){el('gateError').textContent=wrong.join(', ')+' incorrect.';return}
   el('gateError').textContent='';
-  sessionStorage.setItem('pcdr-access','1');el('gate').classList.add('hidden');
-  const saved=localStorage.getItem('pcdr-auth-user-v2'),m=saved&&memberBySlug(saved);
-  if(m&&m.active!==false)finishSignin(m);else showSignin();
+  sessionStorage.setItem('pcdr-access','1');el('gate').classList.add('hidden');el('app').classList.remove('hidden');
+  updateAdminUI();renderRankings();renderMembers();loadVotes();
 });
 
 document.querySelectorAll('nav button[data-view]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
 function go(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
   document.querySelectorAll('nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
-  if(id==='admin'){renderAdminRoster();loadSignins()}
+  if(id==='admin'){renderAdminRoster()}
   window.scrollTo({top:220,behavior:'smooth'});
 }
 el('rankSearch').addEventListener('input',renderRankings);el('memberSearch').addEventListener('input',renderMembers);
@@ -323,14 +273,6 @@ el('submitAdmin').addEventListener('click',async()=>{
   adminUnlocked=true;sessionStorage.setItem('pcdr-admin','1');el('adminModal').classList.remove('show');updateAdminUI();go('admin');toast('Master mode unlocked')
 });
 function updateAdminUI(){el('adminTab').classList.toggle('hidden',!adminUnlocked)}
-async function loadSignins(){
-  if(!adminUnlocked)return;el('signinList').innerHTML='<div class="tag">Loading sign-ins…</div>';
-  const list=activeMembers();
-  for(let i=0;i<list.length;i+=10){await Promise.all(list.slice(i,i+10).map(async m=>{m.signin=await readCounter('signin',m)}))}
-  const signed=list.filter(m=>m.signin>0).sort((a,b)=>b.signin-a.signin||a.name.localeCompare(b.name));
-  el('signinList').innerHTML=signed.length?signed.map(m=>'<div class="admin-row"><div><strong>'+esc(m.name)+'</strong><span>Signed in'+(m.signin>1?' · '+m.signin+' recorded devices/uses':'')+'</span></div><span>✓</span></div>').join(''):'<div class="tag">Nobody recorded yet.</div>';
-}
-el('refreshSignins').addEventListener('click',loadSignins);
 function renderAdminRoster(){
   if(!adminUnlocked)return;
   el('adminRoster').innerHTML=activeMembers().slice().sort((a,b)=>a.name.localeCompare(b.name)).map(m=>'<div class="admin-row"><div><strong>'+esc(m.name)+'</strong><span>'+esc(m.slug)+'</span></div><div class="admin-actions"><button class="btn small" onclick="adminPhoto(\''+m.slug+'\')">Photo</button><button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button></div></div>').join('');
@@ -359,7 +301,7 @@ el('submitPhoto').addEventListener('click',async()=>{
   if(!selectedMember||!selectedFile){toast('Drop a picture first.');return}
   let copied=false;try{if(window.ClipboardItem&&navigator.clipboard?.write){const item={};item[selectedFile.type]=selectedFile;await navigator.clipboard.write([new ClipboardItem(item)]);copied=true}}catch(e){}
   const title='Photo Request: '+selectedMember.name;
-  const body='Requested by **'+(currentUser?currentUser.name:'Unknown')+'** for **'+selectedMember.name+'**.\\n\\n'+(copied?'The image was copied to my clipboard. I will paste it below before submitting.':'I will drag the image below before submitting.')+'\\n\\nPlease review before adding it.';
+  const body='Requested by **'+'PC member'+'** for **'+selectedMember.name+'**.\\n\\n'+(copied?'The image was copied to my clipboard. I will paste it below before submitting.':'I will drag the image below before submitting.')+'\\n\\nPlease review before adding it.';
   window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');closePhoto();toast(copied?'Paste the copied image into the GitHub issue, then submit.':'Drag the image into the GitHub issue, then submit.')
 });
 
@@ -368,7 +310,7 @@ el('cancelSuper').addEventListener('click',()=>el('superModal').classList.remove
 el('submitSuper').addEventListener('click',()=>{
   const reason=el('superReason').value.trim();if(reason.length<8){el('superError').textContent='Give at least a short reason.';return}
   const title='Super Upvote Request: '+superTarget.name;
-  const body='**Requester:** '+currentUser.name+'\\n\\n**Target:** '+superTarget.name+'\\n\\n**Why they should be higher:**\\n'+reason+'\\n\\n---\\nThis is a request only; it does not automatically change the ranking.';
+  const body='**Requester:** PC member' +'\\n\\n**Target:** '+superTarget.name+'\\n\\n**Why they should be higher:**\\n'+reason+'\\n\\n---\\nThis is a request only; it does not automatically change the ranking.';
   window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');el('superModal').classList.remove('show');toast('Submit the GitHub request so the admin can review it.')
 });
 
@@ -377,8 +319,8 @@ function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('show'
   await loadRoster();updateAdminUI();
   if(sessionStorage.getItem('pcdr-access')==='1'){
     el('gate').classList.add('hidden');
-    const saved=localStorage.getItem('pcdr-current-user'),m=saved&&memberBySlug(saved);
-    if(m&&m.active!==false)finishSignin(m);else showSignin();
+    el('app').classList.remove('hidden');
+    renderRankings();renderMembers();loadVotes();
   }
 })();
 </script>
