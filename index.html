@@ -82,11 +82,21 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     </section>
 
     <section id="admin" class="view">
-      <div class="section-head"><div><h2>Master Admin</h2><p>Owner-only controls and sign-in activity.</p></div><div class="status">MASTER</div></div>
+      <div class="section-head"><div><h2>Master Admin</h2><p>Owner controls for the PC leaderboard.</p></div><div class="status">MASTER</div></div>
       <div class="admin-grid">
         <div class="panel">
-          <h3>Roster controls</h3><div class="tag">Photo/delete commands only apply if the GitHub issue is submitted from your repository-owner account.</div>
-          <div style="margin-top:10px"><button id="openSuperRequests" class="btn super small">Open Super Upvote Requests</button></div>
+          <h3>Live activity</h3>
+          <div style="font-size:42px;font-weight:1000;letter-spacing:-.06em;margin:6px 0" id="onlineCount">—</div>
+          <div class="tag">Approx. browsers active in the last minute. No regular sign-in is required.</div>
+          <button id="refreshOnline" class="btn small" style="margin-top:10px">Refresh Online Count</button>
+          <div style="height:18px"></div>
+          <h3>Requests</h3>
+          <div class="tag">Review incoming super-upvote requests.</div>
+          <button id="openSuperRequests" class="btn super small" style="margin-top:10px">Open Super Upvote Requests</button>
+        </div>
+        <div class="panel">
+          <h3>Roster & ranking controls</h3>
+          <div class="tag">Remove/restore people, change photos or names, reset visible votes, and add a manual score adjustment. Shared changes only apply when the GitHub command is submitted from your owner account.</div>
           <div id="adminRoster" class="admin-list"></div>
         </div>
       </div>
@@ -134,7 +144,7 @@ const ACCESS_ANSWERS={
  q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
  q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
-let members=[],selectedMember=null,selectedFile=null,superTarget=null;
+let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='';
 const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
 localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
@@ -159,7 +169,7 @@ async function loadRoster(){
   try{
     const rr=await fetch('data.json?ts='+Date.now(),{cache:'no-store'});
     const d=await rr.json();
-    members=(d.members||[]).map(m=>({...m,up:0,down:0,upUndo:0,downUndo:0,loaded:false}));
+    members=(d.members||[]).map(m=>({...m,adminAdjustment:Number(m.adminAdjustment||0),upOffset:Number(m.upOffset||0),downOffset:Number(m.downOffset||0),up:0,down:0,upUndo:0,downUndo:0,loaded:false}));
   }catch(e){toast('Roster failed to load. Refresh the page.')}
 }
 async function loadVotes(){
@@ -175,9 +185,10 @@ async function loadVotes(){
     await new Promise(r=>setTimeout(r,70));
   }
 }
-function effectiveUp(m){return Math.max(0,(m.up||0)-(m.upUndo||0))}
-function effectiveDown(m){return Math.max(0,(m.down||0)-(m.downUndo||0))}
-function score(m){return effectiveUp(m)-effectiveDown(m)}
+function effectiveUp(m){return Math.max(0,(m.up||0)-(m.upUndo||0)-(m.upOffset||0))}
+function effectiveDown(m){return Math.max(0,(m.down||0)-(m.downUndo||0)-(m.downOffset||0))}
+function baseScore(m){return effectiveUp(m)-effectiveDown(m)}
+function score(m){return baseScore(m)+(Number(m.adminAdjustment)||0)}
 function ranked(filter=''){
   const q=filter.toLowerCase().trim();
   return activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>score(b)-score(a)||effectiveUp(b)-effectiveUp(a)||a.name.localeCompare(b.name));
@@ -192,7 +203,7 @@ function renderRankings(){
     const r=all.findIndex(x=>x.slug===m.slug)+1,v=state[m.slug];
     return '<div class="rank-card '+(r<=3?'top':'')+'">'+
       '<div class="ranknum">#'+r+'</div><div class="avatar">'+avatarHTML(m)+'</div>'+
-      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' &nbsp; ▼ '+(m.loaded?effectiveDown(m):'…')+'</div></div>'+
+      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' &nbsp; ▼ '+(m.loaded?effectiveDown(m):'…')+(m.adminAdjustment?(' &nbsp; • admin '+(m.adminAdjustment>0?'+':'')+m.adminAdjustment):'')+'</div></div>'+
       '<div class="score"><strong>'+(m.loaded?score(m):'…')+'</strong><small>net score</small></div>'+
       '<div class="actions">'+
         '<button class="btn small '+(v==='up'?'good':'')+'" onclick="castVote(\''+m.slug+'\',\'up\')">'+(v==='up'?'↩ Undo Upvote':(v==='down'?'▲ Switch to Upvote':'▲ Upvote'))+'</button>'+
@@ -261,7 +272,7 @@ document.querySelectorAll('nav button[data-view]').forEach(b=>b.addEventListener
 function go(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
   document.querySelectorAll('nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
-  if(id==='admin'){renderAdminRoster()}
+  if(id==='admin'){renderAdminRoster();refreshOnlineCount()}
   window.scrollTo({top:220,behavior:'smooth'});
 }
 el('rankSearch').addEventListener('input',renderRankings);el('memberSearch').addEventListener('input',renderMembers);
@@ -270,26 +281,90 @@ el('adminBtn').addEventListener('click',()=>{if(adminUnlocked){go('admin')}else{
 el('cancelAdmin').addEventListener('click',()=>el('adminModal').classList.remove('show'));
 el('submitAdmin').addEventListener('click',async()=>{
   if(await hash(el('adminKey').value)!==ADMIN_HASH){el('adminError').textContent='Wrong master key.';return}
-  adminUnlocked=true;sessionStorage.setItem('pcdr-admin','1');el('adminModal').classList.remove('show');updateAdminUI();go('admin');toast('Master mode unlocked')
+  adminUnlocked=true;sessionStorage.setItem('pcdr-admin','1');el('adminModal').classList.remove('show');updateAdminUI();go('admin');presenceHeartbeat();toast('Master mode unlocked')
 });
 function updateAdminUI(){el('adminTab').classList.toggle('hidden',!adminUnlocked)}
 function renderAdminRoster(){
   if(!adminUnlocked)return;
-  el('adminRoster').innerHTML=activeMembers().slice().sort((a,b)=>a.name.localeCompare(b.name)).map(m=>'<div class="admin-row"><div><strong>'+esc(m.name)+'</strong><span>'+esc(m.slug)+'</span></div><div class="admin-actions"><button class="btn small" onclick="adminPhoto(\''+m.slug+'\')">Photo</button><button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button></div></div>').join('');
+  const list=members.slice().sort((a,b)=>{
+    if((a.active!==false)!==(b.active!==false)) return a.active===false?1:-1;
+    return a.name.localeCompare(b.name);
+  });
+  el('adminRoster').innerHTML=list.map(m=>{
+    const active=m.active!==false;
+    const adj=Number(m.adminAdjustment)||0;
+    const scoreText=m.loaded?('base '+baseScore(m)+' · adjustment '+(adj>=0?'+':'')+adj+' · final '+score(m)):('adjustment '+(adj>=0?'+':'')+adj);
+    return '<div class="admin-row"><div><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+'</span></div>'+
+      '<div class="admin-actions">'+
+      '<button class="btn small" onclick="adminAdjust(\''+m.slug+'\')">Rank</button>'+
+      '<button class="btn small" onclick="adminPhoto(\''+m.slug+'\')">Photo</button>'+
+      '<button class="btn small" onclick="adminRename(\''+m.slug+'\')">Name</button>'+
+      '<button class="btn small" onclick="adminResetVotes(\''+m.slug+'\')">Reset Votes</button>'+
+      (active?'<button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button>':'<button class="btn small good" onclick="adminRestore(\''+m.slug+'\')">Restore</button>')+
+      '</div></div>';
+  }).join('');
+}
+function openOwnerCommand(title,body,message){
+  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
+  toast(message||'Submit the GitHub issue from your owner account to apply the change.');
 }
 function adminDelete(slug){
   if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m||!confirm('Remove '+m.name+' from the public PC roster?'))return;
-  const title='PCDR Admin Delete: '+slug,body='Owner-only PC Doosh Rankings admin command.\\n\\nRemove **'+m.name+'** from the public roster.';
-  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
-  toast('Submit the GitHub issue from your owner account to apply the removal.')
+  openOwnerCommand('PCDR Admin Delete: '+slug,'Owner-only PC Doosh Rankings admin command.\n\nRemove **'+m.name+'** from the public roster.','Submit the owner command to remove '+m.name+'.');
+}
+function adminRestore(slug){
+  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+  openOwnerCommand('PCDR Admin Restore: '+slug,'Owner-only PC Doosh Rankings admin command.\n\nRestore **'+m.name+'** to the public roster.','Submit the owner command to restore '+m.name+'.');
 }
 function adminPhoto(slug){
   if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
-  const title='PCDR Admin Photo: '+slug,body='Owner-only PC Doosh Rankings admin command for **'+m.name+'**.\\n\\n**Attach the image below this line BEFORE submitting this issue.**\\n\\n';
-  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
-  toast('Attach the image to the GitHub issue, then submit it.')
+  openOwnerCommand('PCDR Admin Photo: '+slug,'Owner-only PC Doosh Rankings admin command for **'+m.name+'**.\n\n**Attach the image below this line BEFORE submitting this issue.**\n\n','Attach the image to the GitHub issue, then submit it.');
+}
+function adminRename(slug){
+  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+  const name=prompt('New display name for '+m.name+':',m.name);if(!name||!name.trim()||name.trim()===m.name)return;
+  openOwnerCommand('PCDR Admin Rename: '+slug,'name: '+name.trim()+'\n','Submit the owner command to rename this pledge.');
+}
+function adminAdjust(slug){
+  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+  const current=Number(m.adminAdjustment)||0;
+  const raw=prompt('Manual ranking adjustment for '+m.name+'.\nPositive moves them up; negative moves them down.\nExample: 5 or -3',String(current));
+  if(raw===null)return;
+  const value=Number.parseInt(raw,10);
+  if(!Number.isFinite(value)||value<-999||value>999){toast('Enter a whole number from -999 to 999.');return}
+  openOwnerCommand('PCDR Admin Adjust: '+slug,'adjustment: '+value+'\n','Submit the owner command to set '+m.name+' to '+(value>=0?'+':'')+value+' admin points.');
+}
+function adminResetVotes(slug){
+  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+  const up=effectiveUp(m),down=effectiveDown(m);
+  if(!confirm('Reset the visible vote totals for '+m.name+'?\nCurrent: '+up+' up / '+down+' down'))return;
+  openOwnerCommand('PCDR Admin Reset Votes: '+slug,'up: '+up+'\ndown: '+down+'\n','Submit the owner command to reset visible votes for '+m.name+'.');
 }
 el('openSuperRequests').addEventListener('click',()=>window.open('https://github.com/'+REPO+'/issues?q=is%3Aissue+is%3Aopen+%22Super+Upvote+Request%22','_blank','noopener'));
+
+function presenceBucket(offsetMinutes=0){
+  const d=new Date(Date.now()+offsetMinutes*60000);
+  return d.getUTCFullYear()+String(d.getUTCMonth()+1).padStart(2,'0')+String(d.getUTCDate()).padStart(2,'0')+String(d.getUTCHours()).padStart(2,'0')+String(d.getUTCMinutes()).padStart(2,'0');
+}
+async function presenceHeartbeat(){
+  if(sessionStorage.getItem('pcdr-access')!=='1')return;
+  const bucket=presenceBucket();
+  if(bucket!==lastPresenceBucket){
+    lastPresenceBucket=bucket;
+    try{await fetch(counterUrl('presence',bucket,false,DEVICE_ID),{cache:'no-store'})}catch(e){}
+  }
+  if(adminUnlocked)refreshOnlineCount();
+}
+async function readPresence(bucket){
+  try{const r=await fetch(counterUrl('presence',bucket,true),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();return Number(d.value)||0}catch(e){return 0}
+}
+async function refreshOnlineCount(){
+  if(!adminUnlocked||!el('onlineCount'))return;
+  el('onlineCount').textContent='…';
+  const [now,prev]=await Promise.all([readPresence(presenceBucket()),readPresence(presenceBucket(-1))]);
+  el('onlineCount').textContent=Math.max(now,prev);
+}
+el('refreshOnline').addEventListener('click',refreshOnlineCount);
 
 function openPhotoRequest(slug){selectedMember=memberBySlug(slug);selectedFile=null;el('photoTitle').textContent='Photo request for '+selectedMember.name;el('preview').classList.remove('show');el('photoInput').value='';el('photoModal').classList.add('show')}
 function closePhoto(){el('photoModal').classList.remove('show');selectedFile=null}
@@ -320,7 +395,8 @@ function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('show'
   if(sessionStorage.getItem('pcdr-access')==='1'){
     el('gate').classList.add('hidden');
     el('app').classList.remove('hidden');
-    renderRankings();renderMembers();loadVotes();
+    renderRankings();renderMembers();loadVotes();presenceHeartbeat();
+    setInterval(presenceHeartbeat,20000);
   }
 })();
 </script>
