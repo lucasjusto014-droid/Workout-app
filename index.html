@@ -83,6 +83,11 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
 
     <section id="admin" class="view">
       <div class="section-head"><div><h2>Master Admin</h2><p>Owner controls for the PC leaderboard.</p></div><div class="status">MASTER</div></div>
+      <div class="panel" style="margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:220px"><strong id="githubStatus">GitHub not connected</strong><div class="tag">Connect once per browser tab so Master changes save immediately without leaving this site.</div></div>
+        <button id="connectGitHubBtn" class="btn primary small">Connect GitHub</button>
+        <button id="disconnectGitHubBtn" class="btn small hidden">Disconnect</button>
+      </div>
       <div class="admin-grid">
         <div class="panel">
           <h3>Live activity</h3>
@@ -96,7 +101,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
         </div>
         <div class="panel">
           <h3>Roster & ranking controls</h3>
-          <div class="tag">Add/remove/restore people, change rankings, edit photos or names, and reset visible votes. Shared changes only apply when the GitHub command is submitted from your owner account.</div>
+          <div class="tag">Add/remove/restore people, force a manual rank, edit photos or names, and reset visible votes. Once GitHub is connected, changes save directly from this page.</div>
           <button id="addPersonBtn" class="btn primary small" style="margin-top:10px">+ Add Person</button>
           <div id="adminRoster" class="admin-list"></div>
         </div>
@@ -112,6 +117,21 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     <input id="adminKey" type="password" class="field" autocomplete="off" placeholder="Master key">
     <div id="adminError" class="error"></div>
     <div class="modal-actions"><button id="cancelAdmin" class="btn">Cancel</button><button id="submitAdmin" class="btn primary">Unlock</button></div>
+  </div>
+</div>
+
+<div id="githubModal" class="modal">
+  <div class="card">
+    <h3>Connect Master to GitHub</h3>
+    <p class="sub">Paste a fine-grained GitHub token for <strong>Workout-app</strong> with <strong>Contents: Read and write</strong>. It is kept only in this browser tab.</p>
+    <input id="githubTokenInput" type="password" class="field" autocomplete="off" placeholder="github_pat_...">
+    <div id="githubTokenError" class="error"></div>
+    <div class="modal-actions">
+      <button id="getGitHubTokenBtn" class="btn">Create Token</button>
+      <button id="cancelGitHubTokenBtn" class="btn">Cancel</button>
+      <button id="saveGitHubTokenBtn" class="btn primary">Connect</button>
+    </div>
+    <div class="note">Use a fine-grained token limited to this repository. Do not paste the token into chat.</div>
   </div>
 </div>
 
@@ -149,6 +169,7 @@ let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresen
 const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
 localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
+let githubToken=sessionStorage.getItem('pcdr-gh-token')||'';
 
 function el(id){return document.getElementById(id)}
 function norm(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
@@ -170,7 +191,7 @@ async function loadRoster(){
   try{
     const rr=await fetch('data.json?ts='+Date.now(),{cache:'no-store'});
     const d=await rr.json();
-    members=(d.members||[]).map(m=>({...m,adminAdjustment:Number(m.adminAdjustment||0),upOffset:Number(m.upOffset||0),downOffset:Number(m.downOffset||0),up:0,down:0,upUndo:0,downUndo:0,loaded:false}));
+    members=(d.members||[]).map(m=>({...m,adminAdjustment:Number(m.adminAdjustment||0),rankOverride:Number(m.rankOverride||0),upOffset:Number(m.upOffset||0),downOffset:Number(m.downOffset||0),up:0,down:0,upUndo:0,downUndo:0,loaded:false}));
   }catch(e){toast('Roster failed to load. Refresh the page.')}
 }
 async function loadVotes(){
@@ -190,9 +211,19 @@ function effectiveUp(m){return Math.max(0,(m.up||0)-(m.upUndo||0)-(m.upOffset||0
 function effectiveDown(m){return Math.max(0,(m.down||0)-(m.downUndo||0)-(m.downOffset||0))}
 function baseScore(m){return effectiveUp(m)-effectiveDown(m)}
 function score(m){return baseScore(m)+(Number(m.adminAdjustment)||0)}
+function globalRanked(){
+  const base=activeMembers().slice().sort((a,b)=>score(b)-score(a)||effectiveUp(b)-effectiveUp(a)||a.name.localeCompare(b.name));
+  const pinned=base.filter(m=>Number(m.rankOverride)>0).sort((a,b)=>Number(a.rankOverride)-Number(b.rankOverride)||a.name.localeCompare(b.name));
+  const result=base.filter(m=>!(Number(m.rankOverride)>0));
+  pinned.forEach(m=>{
+    const pos=Math.max(0,Math.min(result.length,Number(m.rankOverride)-1));
+    result.splice(pos,0,m);
+  });
+  return result;
+}
 function ranked(filter=''){
   const q=filter.toLowerCase().trim();
-  return activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>score(b)-score(a)||effectiveUp(b)-effectiveUp(a)||a.name.localeCompare(b.name));
+  return globalRanked().filter(m=>!q||m.name.toLowerCase().includes(q));
 }
 function voteState(){
   try{return JSON.parse(localStorage.getItem('pcdr-votes-device')||'{}')}catch(e){return {}}
@@ -204,7 +235,7 @@ function renderRankings(){
     const r=all.findIndex(x=>x.slug===m.slug)+1,v=state[m.slug];
     return '<div class="rank-card '+(r<=3?'top':'')+'">'+
       '<div class="ranknum">#'+r+'</div><div class="avatar">'+avatarHTML(m)+'</div>'+
-      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' &nbsp; ▼ '+(m.loaded?effectiveDown(m):'…')+(m.adminAdjustment?(' &nbsp; • admin '+(m.adminAdjustment>0?'+':'')+m.adminAdjustment):'')+'</div></div>'+
+      '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' &nbsp; ▼ '+(m.loaded?effectiveDown(m):'…')+(m.rankOverride?(' &nbsp; • master rank #'+m.rankOverride):'')+(m.adminAdjustment?(' &nbsp; • admin '+(m.adminAdjustment>0?'+':'')+m.adminAdjustment):'')+'</div></div>'+
       '<div class="score"><strong>'+(m.loaded?score(m):'…')+'</strong><small>net score</small></div>'+
       '<div class="actions">'+
         '<button class="btn small '+(v==='up'?'good':'')+'" onclick="castVote(\''+m.slug+'\',\'up\')">'+(v==='up'?'↩ Undo Upvote':(v==='down'?'▲ Switch to Upvote':'▲ Upvote'))+'</button>'+
@@ -273,7 +304,7 @@ document.querySelectorAll('nav button[data-view]').forEach(b=>b.addEventListener
 function go(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
   document.querySelectorAll('nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
-  if(id==='admin'){renderAdminRoster();refreshOnlineCount()}
+  if(id==='admin'){renderAdminRoster();refreshOnlineCount();updateGitHubStatus()}
   window.scrollTo({top:220,behavior:'smooth'});
 }
 el('rankSearch').addEventListener('input',renderRankings);el('memberSearch').addEventListener('input',renderMembers);
@@ -282,76 +313,211 @@ el('adminBtn').addEventListener('click',()=>{if(adminUnlocked){go('admin')}else{
 el('cancelAdmin').addEventListener('click',()=>el('adminModal').classList.remove('show'));
 el('submitAdmin').addEventListener('click',async()=>{
   if(await hash(el('adminKey').value)!==ADMIN_HASH){el('adminError').textContent='Wrong master key.';return}
-  adminUnlocked=true;sessionStorage.setItem('pcdr-admin','1');el('adminModal').classList.remove('show');updateAdminUI();go('admin');presenceHeartbeat();toast('Master mode unlocked')
+  adminUnlocked=true;sessionStorage.setItem('pcdr-admin','1');el('adminModal').classList.remove('show');updateAdminUI();go('admin');presenceHeartbeat();updateGitHubStatus();toast('Master mode unlocked')
 });
 function updateAdminUI(){el('adminTab').classList.toggle('hidden',!adminUnlocked)}
+function updateGitHubStatus(){
+  const connected=!!githubToken;
+  if(el('githubStatus'))el('githubStatus').textContent=connected?'GitHub connected — direct Master edits enabled':'GitHub not connected';
+  if(el('connectGitHubBtn'))el('connectGitHubBtn').classList.toggle('hidden',connected);
+  if(el('disconnectGitHubBtn'))el('disconnectGitHubBtn').classList.toggle('hidden',!connected);
+}
+function showGitHubConnect(){
+  el('githubTokenInput').value='';
+  el('githubTokenError').textContent='';
+  el('githubModal').classList.add('show');
+}
+el('connectGitHubBtn').addEventListener('click',showGitHubConnect);
+el('cancelGitHubTokenBtn').addEventListener('click',()=>el('githubModal').classList.remove('show'));
+el('getGitHubTokenBtn').addEventListener('click',()=>window.open('https://github.com/settings/personal-access-tokens/new','_blank','noopener'));
+el('disconnectGitHubBtn').addEventListener('click',()=>{
+  githubToken='';sessionStorage.removeItem('pcdr-gh-token');updateGitHubStatus();toast('GitHub disconnected from this tab.');
+});
+async function ghRequest(path,options={}){
+  if(!githubToken)throw new Error('NOT_CONNECTED');
+  const headers=Object.assign({
+    'Accept':'application/vnd.github+json',
+    'Authorization':'Bearer '+githubToken,
+    'X-GitHub-Api-Version':'2022-11-28'
+  },options.headers||{});
+  const r=await fetch('https://api.github.com/repos/'+REPO+'/'+path,Object.assign({},options,{headers}));
+  if(!r.ok){
+    const t=await r.text().catch(()=> '');
+    const e=new Error('GitHub '+r.status+' '+t);e.status=r.status;throw e;
+  }
+  return r.status===204?null:r.json();
+}
+async function testGitHubToken(token){
+  const old=githubToken;githubToken=token;
+  try{
+    await ghRequest('contents/data.json?ref=main');
+    return true;
+  }catch(e){
+    githubToken=old;
+    throw e;
+  }
+}
+el('saveGitHubTokenBtn').addEventListener('click',async()=>{
+  const token=el('githubTokenInput').value.trim();
+  if(!token){el('githubTokenError').textContent='Paste the token first.';return}
+  el('githubTokenError').textContent='Checking access…';
+  try{
+    await testGitHubToken(token);
+    githubToken=token;sessionStorage.setItem('pcdr-gh-token',token);
+    el('githubModal').classList.remove('show');updateGitHubStatus();toast('GitHub connected. Master edits are now direct.');
+  }catch(e){
+    el('githubTokenError').textContent='Could not access Workout-app. Check that the token is limited to this repo and has Contents: Read and write.';
+  }
+});
+function requireGitHub(){
+  if(githubToken)return true;
+  showGitHubConnect();toast('Connect GitHub once to save Master changes.');return false;
+}
+function b64Utf8(str){
+  const bytes=new TextEncoder().encode(str);
+  let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));
+  return btoa(binary);
+}
+async function fetchRepoData(){
+  const meta=await ghRequest('contents/data.json?ref=main');
+  const clean=(meta.content||'').replace(/\n/g,'');
+  const text=decodeURIComponent(escape(atob(clean)));
+  return {data:JSON.parse(text),sha:meta.sha};
+}
+async function saveRepoData(data,sha,message){
+  return ghRequest('contents/data.json',{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message,content:b64Utf8(JSON.stringify(data,null,2)+'\n'),sha,branch:'main'})
+  });
+}
+async function mutateRepoData(message,mutator){
+  if(!requireGitHub())return false;
+  try{
+    const latest=await fetchRepoData();
+    const changed=await mutator(latest.data);
+    if(changed===false)return false;
+    await saveRepoData(latest.data,latest.sha,message);
+    await loadRoster();renderRankings();renderMembers();renderAdminRoster();loadVotes();
+    toast('Saved.');
+    return true;
+  }catch(e){
+    if(e.status===401||e.status===403){githubToken='';sessionStorage.removeItem('pcdr-gh-token');updateGitHubStatus();showGitHubConnect()}
+    toast('Master change failed. Check GitHub connection.');
+    return false;
+  }
+}
 function renderAdminRoster(){
   if(!adminUnlocked)return;
+  const order=globalRanked();
   const list=members.slice().sort((a,b)=>{
-    if((a.active!==false)!==(b.active!==false)) return a.active===false?1:-1;
+    if((a.active!==false)!==(b.active!==false))return a.active===false?1:-1;
+    const ai=order.findIndex(x=>x.slug===a.slug),bi=order.findIndex(x=>x.slug===b.slug);
+    if(ai>=0&&bi>=0)return ai-bi;
     return a.name.localeCompare(b.name);
   });
   el('adminRoster').innerHTML=list.map(m=>{
     const active=m.active!==false;
-    const adj=Number(m.adminAdjustment)||0;
-    const scoreText=m.loaded?('base '+baseScore(m)+' · adjustment '+(adj>=0?'+':'')+adj+' · final '+score(m)):('adjustment '+(adj>=0?'+':'')+adj);
+    const actualRank=active?order.findIndex(x=>x.slug===m.slug)+1:0;
+    const manual=Number(m.rankOverride)||0;
+    const scoreText=m.loaded?('rank #'+actualRank+' · score '+score(m)+(manual?' · forced #'+manual:'')):((manual?'forced #'+manual:'votes loading'));
     return '<div class="admin-row"><div><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+'</span></div>'+
       '<div class="admin-actions">'+
-      '<button class="btn small" onclick="adminAdjust(\''+m.slug+'\')">Change Rank</button>'+
-      '<button class="btn small" onclick="adminPhoto(\''+m.slug+'\')">Photo</button>'+
+      '<button class="btn small" onclick="adminSetRank(\''+m.slug+'\')">Rank</button>'+
+      '<button class="btn small" onclick="adminPhotoDirect(\''+m.slug+'\')">Photo</button>'+
       '<button class="btn small" onclick="adminRename(\''+m.slug+'\')">Name</button>'+
       '<button class="btn small" onclick="adminResetVotes(\''+m.slug+'\')">Reset Votes</button>'+
       (active?'<button class="btn small bad" onclick="adminDelete(\''+m.slug+'\')">Remove</button>':'<button class="btn small good" onclick="adminRestore(\''+m.slug+'\')">Restore</button>')+
       '</div></div>';
   }).join('');
 }
-function openOwnerCommand(title,body,message){
-  window.open('https://github.com/'+REPO+'/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');
-  toast(message||'Submit the GitHub issue from your owner account to apply the change.');
-}
-function adminAdd(){
-  if(!adminUnlocked)return;
+async function adminAdd(){
+  if(!adminUnlocked||!requireGitHub())return;
   const name=prompt('Name of the new pledge:');
   if(!name||!name.trim())return;
   const clean=name.trim().replace(/\s+/g,' ');
   const slug=clean.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   if(!slug){toast('Enter a valid name.');return}
-  if(memberBySlug(slug)){toast('That person already exists.');return}
-  openOwnerCommand('PCDR Admin Add: '+slug,'name: '+clean+'\n','Submit the owner command to add '+clean+'.');
+  await mutateRepoData('Add '+clean+' to PC Doosh Rankings',data=>{
+    if((data.members||[]).some(m=>m.slug===slug)){toast('That person already exists.');return false}
+    data.members.push({name:clean,slug,active:true,photo:null,rankOverride:0,adminAdjustment:0,upOffset:0,downOffset:0});
+    return true;
+  });
 }
 el('addPersonBtn').addEventListener('click',adminAdd);
 
-function adminDelete(slug){
-  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m||!confirm('Remove '+m.name+' from the public PC roster?'))return;
-  openOwnerCommand('PCDR Admin Delete: '+slug,'Owner-only PC Doosh Rankings admin command.\n\nRemove **'+m.name+'** from the public roster.','Submit the owner command to remove '+m.name+'.');
+async function adminDelete(slug){
+  if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m||!confirm('Remove '+m.name+' from the public PC roster?'))return;
+  await mutateRepoData('Remove '+m.name+' from PC Doosh Rankings',data=>{
+    const x=data.members.find(x=>x.slug===slug);if(!x)return false;x.active=false;return true;
+  });
 }
-function adminRestore(slug){
-  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
-  openOwnerCommand('PCDR Admin Restore: '+slug,'Owner-only PC Doosh Rankings admin command.\n\nRestore **'+m.name+'** to the public roster.','Submit the owner command to restore '+m.name+'.');
+async function adminRestore(slug){
+  if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m)return;
+  await mutateRepoData('Restore '+m.name+' to PC Doosh Rankings',data=>{
+    const x=data.members.find(x=>x.slug===slug);if(!x)return false;x.active=true;return true;
+  });
 }
-function adminPhoto(slug){
-  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
-  openOwnerCommand('PCDR Admin Photo: '+slug,'Owner-only PC Doosh Rankings admin command for **'+m.name+'**.\n\n**Attach the image below this line BEFORE submitting this issue.**\n\n','Attach the image to the GitHub issue, then submit it.');
-}
-function adminRename(slug){
-  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+async function adminRename(slug){
+  if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m)return;
   const name=prompt('New display name for '+m.name+':',m.name);if(!name||!name.trim()||name.trim()===m.name)return;
-  openOwnerCommand('PCDR Admin Rename: '+slug,'name: '+name.trim()+'\n','Submit the owner command to rename this pledge.');
+  const clean=name.trim().replace(/\s+/g,' ');
+  await mutateRepoData('Rename '+m.name+' in PC Doosh Rankings',data=>{
+    const x=data.members.find(x=>x.slug===slug);if(!x)return false;x.name=clean;return true;
+  });
 }
-function adminAdjust(slug){
-  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
-  const current=Number(m.adminAdjustment)||0;
-  const raw=prompt('Manual ranking adjustment for '+m.name+'.\nPositive moves them up; negative moves them down.\nExample: 5 or -3',String(current));
+async function adminSetRank(slug){
+  if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m)return;
+  const current=globalRanked().findIndex(x=>x.slug===slug)+1;
+  const raw=prompt('Force '+m.name+' to which rank?\nEnter 1-'+activeMembers().length+'. Enter 0 to return them to vote-based ranking.',String(m.rankOverride||current));
   if(raw===null)return;
-  const value=Number.parseInt(raw,10);
-  if(!Number.isFinite(value)||value<-999||value>999){toast('Enter a whole number from -999 to 999.');return}
-  openOwnerCommand('PCDR Admin Adjust: '+slug,'adjustment: '+value+'\n','Submit the owner command to set '+m.name+' to '+(value>=0?'+':'')+value+' admin points.');
+  const target=Number.parseInt(raw,10);
+  if(!Number.isInteger(target)||target<0||target>activeMembers().length){toast('Enter 0 through '+activeMembers().length+'.');return}
+  await mutateRepoData('Change '+m.name+' rank in PC Doosh Rankings',data=>{
+    const x=data.members.find(x=>x.slug===slug);if(!x)return false;x.rankOverride=target;return true;
+  });
 }
-function adminResetVotes(slug){
-  if(!adminUnlocked)return;const m=memberBySlug(slug);if(!m)return;
+async function adminResetVotes(slug){
+  if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m)return;
   const up=effectiveUp(m),down=effectiveDown(m);
-  if(!confirm('Reset the visible vote totals for '+m.name+'?\nCurrent: '+up+' up / '+down+' down'))return;
-  openOwnerCommand('PCDR Admin Reset Votes: '+slug,'up: '+up+'\ndown: '+down+'\n','Submit the owner command to reset visible votes for '+m.name+'.');
+  if(!confirm('Reset visible votes for '+m.name+'?\nCurrent: '+up+' up / '+down+' down'))return;
+  await mutateRepoData('Reset '+m.name+' votes in PC Doosh Rankings',data=>{
+    const x=data.members.find(x=>x.slug===slug);if(!x)return false;
+    x.upOffset=Number(x.upOffset||0)+up;
+    x.downOffset=Number(x.downOffset||0)+down;
+    return true;
+  });
+}
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(String(r.result).split(',')[1]);
+    r.onerror=reject;r.readAsDataURL(file);
+  });
+}
+async function putRepoFile(path,file,message){
+  let sha;
+  try{const meta=await ghRequest('contents/'+path+'?ref=main');sha=meta.sha}catch(e){if(e.status!==404)throw e}
+  const body={message,content:await fileToBase64(file),branch:'main'};if(sha)body.sha=sha;
+  await ghRequest('contents/'+path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+function adminPhotoDirect(slug){
+  if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m)return;
+  const input=document.createElement('input');input.type='file';input.accept='image/png,image/jpeg,image/webp';
+  input.onchange=async()=>{
+    const file=input.files&&input.files[0];if(!file)return;
+    if(file.size>10*1024*1024){toast('Keep the image under 10 MB.');return}
+    const ext=(file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg');
+    const path='photos/'+slug+'.'+ext;
+    try{
+      await putRepoFile(path,file,'Update '+m.name+' photo');
+      await mutateRepoData('Use new photo for '+m.name,data=>{
+        const x=data.members.find(x=>x.slug===slug);if(!x)return false;
+        x.photo=path+'?v='+Date.now();return true;
+      });
+    }catch(e){toast('Photo upload failed. Check GitHub connection.')}
+  };
+  input.click();
 }
 el('openSuperRequests').addEventListener('click',()=>window.open('https://github.com/'+REPO+'/issues?q=is%3Aissue+is%3Aopen+%22Super+Upvote+Request%22','_blank','noopener'));
 
@@ -378,6 +544,7 @@ async function refreshOnlineCount(){
   el('onlineCount').textContent=Math.max(now,prev);
 }
 el('refreshOnline').addEventListener('click',refreshOnlineCount);
+updateGitHubStatus();
 
 function openPhotoRequest(slug){selectedMember=memberBySlug(slug);selectedFile=null;el('photoTitle').textContent='Photo request for '+selectedMember.name;el('preview').classList.remove('show');el('photoInput').value='';el('photoModal').classList.add('show')}
 function closePhoto(){el('photoModal').classList.remove('show');selectedFile=null}
