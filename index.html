@@ -79,13 +79,13 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     </section>
 
     <section id="pvp" class="view">
-      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. A fresh matchup appears immediately after every vote.</p></div><div class="status">HEAD-TO-HEAD</div></div>
+      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. A fresh matchup appears immediately after every vote.</p></div><div class="status">HEAD-TO-HEAD · v2</div></div>
       <div class="pvp-wrap">
         <div id="pvpStage" class="pvp-stage">
           <div class="pvp-card"><div class="tag">Loading matchup…</div></div>
         </div>
         <div class="pvp-bottom">
-          <div class="tag">Every PvP result counts toward the main rankings: winner +1 upvote, loser +1 downvote.</div>
+          <div class="tag"><strong style="color:#fff">PvP AFFECTS MAIN RANKINGS.</strong> Winner = +1 upvote. Loser = +1 downvote.</div>
           <button id="skipPvpBtn" class="btn small">Skip Matchup</button>
         </div>
         <div class="pvp-leaderboard">
@@ -352,11 +352,12 @@ async function pickDooshier(winnerSlug){
   if(!winner||!loser)return;
   pvpBusy=true;renderPvp();
   try{
+    const eventId=DEVICE_ID+'-pvp-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
     const [pvpWinRes,pvpLossRes,upRes,downRes]=await Promise.all([
-      fetch(counterUrl('pvpwin',winner.slug,false,DEVICE_ID),{cache:'no-store'}),
-      fetch(counterUrl('pvploss',loser.slug,false,DEVICE_ID),{cache:'no-store'}),
-      fetch(counterUrl('upvote',winner.slug,false,DEVICE_ID),{cache:'no-store'}),
-      fetch(counterUrl('downvote',loser.slug,false,DEVICE_ID),{cache:'no-store'})
+      fetch(counterUrl('pvpwin',winner.slug,false,eventId+'-w'),{cache:'no-store'}),
+      fetch(counterUrl('pvploss',loser.slug,false,eventId+'-l'),{cache:'no-store'}),
+      fetch(counterUrl('upvote',winner.slug,false,eventId+'-up'),{cache:'no-store'}),
+      fetch(counterUrl('downvote',loser.slug,false,eventId+'-down'),{cache:'no-store'})
     ]);
     if(!pvpWinRes.ok||!pvpLossRes.ok||!upRes.ok||!downRes.ok)throw 0;
     const [pvpWinData,pvpLossData,upData,downData]=await Promise.all([
