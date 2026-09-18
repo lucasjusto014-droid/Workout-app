@@ -184,7 +184,11 @@
       "name": "AJ Fonseca",
       "slug": "adrian-fonseca",
       "active": true,
-      "photo": "photos/adrian-fonseca.jpg?v=1789767742464"
+      "photo": "photos/cropped/adrian-fonseca.jpg?v=1789769106618",
+      "photoOriginal": "photos/adrian-fonseca.jpg?v=1789767742464",
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Jordan Cross",
