@@ -443,11 +443,18 @@
       "name": "Sam Atwater",
       "slug": "sam-atwater",
       "active": true,
-      "photo": "photos/sam-atwater.jpg?v=1789767736411",
+      "photo": "photos/cropped/sam-atwater.jpg?v=1789769946861",
       "rankOverride": 0,
       "adminAdjustment": 0,
       "upOffset": 0,
-      "downOffset": 0
+      "downOffset": 0,
+      "photoOriginal": "photos/sam-atwater.jpg?v=1789767736411",
+      "cropX": 50,
+      "cropY": 50,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Henry Cravens",
