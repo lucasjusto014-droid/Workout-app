@@ -1,0 +1,100 @@
+name: PC Doosh Rankings Admin
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  admin-command:
+    if: >
+      github.actor == 'lucasjusto014-droid' &&
+      (startsWith(github.event.issue.title, 'PCDR Admin Delete:') ||
+       startsWith(github.event.issue.title, 'PCDR Admin Photo:'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Apply admin command
+        id: apply
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python - <<'PY'
+          import json, os, re
+
+          title = os.environ.get("ISSUE_TITLE", "")
+          body = os.environ.get("ISSUE_BODY", "") or ""
+          path = "data.json"
+
+          with open(path, "r", encoding="utf-8") as f:
+              data = json.load(f)
+
+          changed = False
+          message = ""
+
+          if title.startswith("PCDR Admin Delete:"):
+              slug = title.split(":", 1)[1].strip()
+              for member in data.get("members", []):
+                  if member.get("slug") == slug:
+                      member["active"] = False
+                      changed = True
+                      message = f"Removed {member.get('name', slug)} from the public roster."
+                      break
+              if not message:
+                  message = f"No roster member matched slug: {slug}"
+
+          elif title.startswith("PCDR Admin Photo:"):
+              slug = title.split(":", 1)[1].strip()
+              urls = re.findall(r'https://github\.com/user-attachments/assets/[A-Za-z0-9-]+(?:\?[^\s)]+)?', body)
+              if not urls:
+                  urls = re.findall(r'https?://[^\s)]+', body)
+              image_url = urls[0] if urls else None
+
+              if not image_url:
+                  message = "No image URL was found in the issue body. Attach an image before submitting the issue."
+              else:
+                  for member in data.get("members", []):
+                      if member.get("slug") == slug:
+                          member["photo"] = image_url
+                          changed = True
+                          message = f"Updated the photo for {member.get('name', slug)}."
+                          break
+                  if not message:
+                      message = f"No roster member matched slug: {slug}"
+
+          if changed:
+              with open(path, "w", encoding="utf-8") as f:
+                  json.dump(data, f, indent=2)
+                  f.write("\n")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"changed={'true' if changed else 'false'}\n")
+              out.write("message<<EOF\n")
+              out.write(message + "\n")
+              out.write("EOF\n")
+          PY
+
+      - name: Commit roster change
+        if: steps.apply.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git commit -m "Apply PC Doosh Rankings admin change"
+          git push
+
+      - name: Comment result
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RESULT_MESSAGE: ${{ steps.apply.outputs.message }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "$RESULT_MESSAGE"
+          if [ "${{ steps.apply.outputs.changed }}" = "true" ]; then
+            gh issue close "$ISSUE_NUMBER"
+          fi
