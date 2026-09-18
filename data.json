@@ -40,7 +40,10 @@
       "name": "Jake Wells",
       "slug": "jake-wells",
       "active": true,
-      "photo": "photos/jake-wells.jpg?v=1789767722590"
+      "photo": "photos/jake-wells.jpg?v=1789767722590",
+      "photoX": 57,
+      "photoY": 100,
+      "photoZoom": 1
     },
     {
       "name": "Alex Batista",
