@@ -5,223 +5,146 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b0b0c" />
   <title>Doosh Rankings</title>
-  <meta name="description" content="The unofficial pledge class doosh rankings." />
+  <meta name="description" content="The unofficial pledge class Doosh Rankings." />
   <style>
-    :root{
-      --bg:#09090b;--panel:#121216;--panel2:#18181d;--line:#28282f;
-      --text:#f5f5f7;--muted:#9999a3;--accent:#ff3b30;--gold:#f4c542;
-      --green:#35c76f;--red:#ff5b57;--shadow:0 16px 50px rgba(0,0,0,.35)
-    }
-    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    :root{--bg:#09090b;--panel:#121216;--line:#28282f;--text:#f5f5f7;--muted:#9999a3;--accent:#ff3b30;--gold:#f4c542;--green:#35c76f;--shadow:0 16px 50px rgba(0,0,0,.35)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
     body{margin:0;background:radial-gradient(circle at top,#18181d 0,#0b0b0e 34%,#08080a 100%);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
-    button,input{font:inherit} button{cursor:pointer}
-    .wrap{width:min(1120px,calc(100% - 28px));margin:auto}
+    button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}.wrap{width:min(1120px,calc(100% - 28px));margin:auto}
     .ticker{overflow:hidden;border-bottom:1px solid #2a1615;background:#180c0b;color:#ffc8c4;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
-    .ticker span{display:inline-block;padding:9px 0;animation:ticker 24s linear infinite}
-    @keyframes ticker{from{transform:translateX(30vw)}to{transform:translateX(-100%)}}
+    .ticker span{display:inline-block;padding:9px 0;animation:ticker 28s linear infinite}@keyframes ticker{from{transform:translateX(30vw)}to{transform:translateX(-100%)}}
     header{position:sticky;top:0;z-index:20;background:rgba(9,9,11,.84);backdrop-filter:blur(15px);border-bottom:1px solid rgba(255,255,255,.07)}
-    .nav{height:68px;display:flex;align-items:center;gap:28px}
-    .brand{display:flex;align-items:center;gap:11px;font-weight:1000;letter-spacing:-.04em;font-size:21px;margin-right:auto}
+    .nav{height:68px;display:flex;align-items:center;gap:20px}.brand{display:flex;align-items:center;gap:11px;font-weight:1000;letter-spacing:-.04em;font-size:21px;margin-right:auto}
     .brandmark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);box-shadow:0 8px 24px rgba(255,59,48,.22);font-size:18px}
-    nav{display:flex;gap:4px}
-    nav button{border:0;color:#bdbdc4;background:transparent;padding:9px 12px;border-radius:9px;font-weight:750}
-    nav button:hover,nav button.active{color:white;background:#1d1d22}
-    .hero{padding:72px 0 36px;text-align:center}
-    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid #3b2422;background:#1b1110;border-radius:999px;color:#ff938d;font-weight:850;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-    h1{font-size:clamp(48px,9vw,94px);line-height:.9;margin:20px 0 18px;letter-spacing:-.075em}
-    h1 .red{color:var(--accent)}
-    .hero p{max-width:630px;margin:0 auto;color:#aaaab3;font-size:17px}
-    .hero-actions{display:flex;justify-content:center;gap:10px;margin-top:26px}
-    .btn{border:1px solid #303038;background:#18181d;color:#fff;border-radius:11px;padding:11px 16px;font-weight:850;transition:.18s}
-    .btn:hover{transform:translateY(-1px);border-color:#464650}
-    .btn.primary{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 10px 28px rgba(255,59,48,.18)}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px auto 44px;max-width:780px}
-    .stat{background:rgba(18,18,22,.86);border:1px solid var(--line);border-radius:15px;padding:15px}
-    .stat strong{display:block;font-size:23px;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:12px;text-transform:uppercase;font-weight:800;letter-spacing:.08em}
-    section.view{display:none;padding:0 0 80px}.view.active{display:block}
-    .section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:0 0 18px}
-    .section-head h2{margin:0;font-size:31px;letter-spacing:-.045em}.section-head p{margin:3px 0 0;color:var(--muted)}
-    .status{font-size:12px;border:1px solid #294532;color:#76e09b;background:#101a13;border-radius:999px;padding:6px 9px;font-weight:800}
-    .movers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
-    .mover{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px}
-    .mover-label{text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--muted);font-weight:900;margin-bottom:9px}
-    .mover-row{display:flex;align-items:center;gap:11px}.miniavatar{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:950;background:linear-gradient(135deg,#2f2f38,#19191f);border:1px solid #3a3a43}
-    .delta{margin-left:auto;font-weight:950}.up{color:var(--green)}.down{color:var(--red)}.flat{color:var(--muted)}
-    .rank-card{display:grid;grid-template-columns:62px 62px 1fr auto;align-items:center;gap:14px;background:linear-gradient(180deg,#151519,#111115);border:1px solid var(--line);padding:13px 16px;margin:9px 0;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
-    .rank-card.top{border-color:#51471d;background:linear-gradient(180deg,#1d1a10,#121114)}
-    .rank-num{font-weight:1000;font-size:25px;color:#c8c8ce;letter-spacing:-.05em}.top .rank-num{color:var(--gold)}
-    .avatar{width:56px;height:56px;border-radius:15px;display:grid;place-items:center;font-weight:1000;font-size:17px;background:linear-gradient(135deg,#30303a,#17171c);border:1px solid #3b3b44}
-    .person h3{margin:0;font-size:17px}.tag{color:#9f9fa8;font-size:13px;margin-top:2px}.rating{text-align:right}.rating strong{display:block;font-size:18px}.rating small{color:var(--muted)}
-    .battle-shell{max-width:850px;margin:auto}
-    .battle-grid{display:grid;grid-template-columns:1fr 80px 1fr;align-items:stretch;gap:12px}
-    .fighter{min-height:340px;border:1px solid var(--line);background:linear-gradient(180deg,#17171d,#0f0f12);border-radius:20px;padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:var(--shadow)}
-    .fighter .bigavatar{width:122px;height:122px;border-radius:30px;background:linear-gradient(135deg,#3a3a45,#18181e);border:1px solid #454550;display:grid;place-items:center;font-size:32px;font-weight:1000;margin-bottom:20px}
-    .fighter h3{font-size:25px;margin:0;letter-spacing:-.04em}.fighter p{color:var(--muted);margin:5px 0 20px}
-    .fighter button{width:100%;max-width:220px}.versus{display:grid;place-items:center;font-size:18px;color:#777783;font-weight:1000}
-    .battle-note{text-align:center;color:var(--muted);font-size:13px;margin-top:16px}
-    .vote-card{max-width:610px;margin:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:30px;text-align:center}
-    .vote-card .bigavatar{width:110px;height:110px;margin:0 auto 17px;border-radius:28px;display:grid;place-items:center;background:linear-gradient(135deg,#373741,#18181e);border:1px solid #44444e;font-size:29px;font-weight:1000}
-    .vote-card h3{font-size:27px;margin:0}.vote-card p{color:var(--muted);margin:4px 0 22px}
-    .vote-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .members{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .member{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}
-    .member .avatar{margin:0 auto 12px}.member h3{margin:0}.member p{margin:3px 0 0;color:var(--muted);font-size:13px}
-    .foot{border-top:1px solid var(--line);padding:26px 0 42px;color:#767680;font-size:12px;text-align:center}
-    .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;padding:10px 14px;border-radius:10px;transition:.2s;z-index:30;box-shadow:var(--shadow)}
-    .toast.show{opacity:1;transform:translate(-50%,0)}
-    @media(max-width:720px){
-      .nav{height:auto;padding:12px 0;display:block}.brand{margin-bottom:10px}.nav nav{overflow:auto;padding-bottom:2px}
-      .hero{padding-top:50px}.stats{grid-template-columns:1fr}.movers{grid-template-columns:1fr}
-      .rank-card{grid-template-columns:45px 48px 1fr auto;padding:11px}.avatar{width:46px;height:46px}
-      .battle-grid{grid-template-columns:1fr}.versus{height:38px}.members{grid-template-columns:1fr 1fr}
-    }
-    @media(max-width:460px){.members{grid-template-columns:1fr}.rating small{display:none}.rank-card{gap:9px}.person h3{font-size:15px}}
+    nav{display:flex;gap:4px}nav button,.lockbtn{border:0;color:#bdbdc4;background:transparent;padding:9px 12px;border-radius:9px;font-weight:750}
+    nav button:hover,nav button.active,.lockbtn:hover{color:white;background:#1d1d22}
+    .hero{padding:64px 0 30px;text-align:center}.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid #3b2422;background:#1b1110;border-radius:999px;color:#ff938d;font-weight:850;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    h1{font-size:clamp(50px,9vw,96px);line-height:.9;margin:20px 0 18px;letter-spacing:-.075em}h1 .red{color:var(--accent)}.hero p{max-width:650px;margin:0 auto;color:#aaaab3;font-size:17px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px auto 40px;max-width:780px}.stat{background:rgba(18,18,22,.86);border:1px solid var(--line);border-radius:15px;padding:15px}.stat strong{display:block;font-size:23px;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:12px;text-transform:uppercase;font-weight:800;letter-spacing:.08em}
+    section.view{display:none;padding:0 0 80px}.view.active{display:block}.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:0 0 18px}.section-head h2{margin:0;font-size:31px;letter-spacing:-.045em}.section-head p{margin:3px 0 0;color:var(--muted)}
+    .status{font-size:12px;border:1px solid #294532;color:#76e09b;background:#101a13;border-radius:999px;padding:6px 9px;font-weight:800}.toolbar{display:flex;gap:10px;margin:0 0 14px}.search{flex:1;background:#111115;border:1px solid var(--line);color:#fff;border-radius:12px;padding:12px 14px;outline:none}.search:focus{border-color:#575761}
+    .rank-card{display:grid;grid-template-columns:58px 54px 1fr auto auto;align-items:center;gap:13px;background:linear-gradient(180deg,#151519,#111115);border:1px solid var(--line);padding:12px 14px;margin:8px 0;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.1)}.rank-card.top{border-color:#51471d;background:linear-gradient(180deg,#1d1a10,#121114)}
+    .rank-num{font-weight:1000;font-size:24px;color:#c8c8ce;letter-spacing:-.05em}.top .rank-num{color:var(--gold)}.avatar{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-weight:1000;font-size:14px;background:linear-gradient(135deg,#30303a,#17171c);border:1px solid #3b3b44;overflow:hidden}.person h3{margin:0;font-size:16px}.tag{color:#8f8f99;font-size:12px;margin-top:2px}.votes{text-align:right;min-width:74px}.votes strong{display:block;font-size:19px}.votes small{color:var(--muted)}
+    .btn{border:1px solid #303038;background:#18181d;color:#fff;border-radius:11px;padding:10px 13px;font-weight:850;transition:.18s}.btn:hover{transform:translateY(-1px);border-color:#464650}.btn.primary{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 10px 28px rgba(255,59,48,.14)}.btn.upvoted{background:#1c2d22;border-color:#335d40;color:#8be5a9}.btn:disabled{cursor:default;opacity:.72;transform:none}.photo-btn{padding:9px 11px;font-size:12px}
+    .members{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.member{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}.member .avatar{margin:0 auto 12px;width:66px;height:66px}.member h3{margin:0;font-size:16px}.member-actions{display:flex;gap:8px;justify-content:center;margin-top:12px}
+    .foot{border-top:1px solid var(--line);padding:26px 0 42px;color:#767680;font-size:12px;text-align:center}.foot a{color:#9999a3}.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24242a;border:1px solid #3a3a42;padding:10px 14px;border-radius:10px;transition:.2s;z-index:80;box-shadow:var(--shadow);max-width:min(520px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+    .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#231516,#0a0a0d 38%,#070709);display:grid;place-items:center;padding:22px}.gate-card{width:min(620px,100%);background:rgba(18,18,22,.95);border:1px solid #303038;border-radius:22px;padding:28px;box-shadow:0 28px 90px rgba(0,0,0,.55)}.gate-logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,#ff6b61,#b70d09);display:grid;place-items:center;font-size:25px;font-weight:1000;margin-bottom:18px}.gate h2{font-size:32px;letter-spacing:-.05em;margin:0 0 5px}.gate .sub{color:var(--muted);margin:0 0 22px}.q{margin:14px 0}.q label{display:block;font-size:13px;font-weight:850;margin-bottom:7px}.q input{width:100%;border:1px solid #34343c;background:#0e0e12;color:#fff;padding:12px 13px;border-radius:11px;outline:none}.q input:focus{border-color:#6a3a38}.gate-error{min-height:21px;color:#ff817b;font-weight:750;font-size:13px;margin-top:8px}.gate-note{color:#777783;font-size:11px;margin-top:14px}
+    .modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.72);display:none;place-items:center;padding:18px}.modal.show{display:grid}.modal-card{width:min(560px,100%);background:#121216;border:1px solid #303038;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.modal-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}.modal-head h3{margin:0;font-size:23px;letter-spacing:-.035em}.modal-head button{margin-left:auto}.dropzone{border:1.5px dashed #45454f;border-radius:15px;padding:28px 18px;text-align:center;color:#a5a5ae;background:#0d0d10;transition:.18s}.dropzone.drag{border-color:#ff6b61;background:#171012}.dropzone strong{display:block;color:#fff;margin-bottom:4px}.preview{display:none;margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:10px;gap:10px;align-items:center}.preview.show{display:flex}.preview img{width:64px;height:64px;object-fit:cover;border-radius:10px}.preview-info{min-width:0}.preview-info strong,.preview-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.preview-info span{color:var(--muted);font-size:12px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.modal-note{font-size:12px;color:#898993;margin-top:12px;line-height:1.45}
+    @media(max-width:820px){.rank-card{grid-template-columns:44px 48px 1fr auto}.rank-card .actions{grid-column:3/5;justify-self:stretch}.members{grid-template-columns:1fr 1fr}}
+    @media(max-width:720px){.nav{height:auto;padding:12px 0;display:block}.brand{margin-bottom:10px}.nav nav{overflow:auto;padding-bottom:2px}.lockbtn{position:absolute;right:14px;top:13px}.hero{padding-top:48px}.stats{grid-template-columns:1fr}}
+    @media(max-width:500px){.rank-card{grid-template-columns:38px 44px 1fr auto;gap:8px;padding:10px}.rank-num{font-size:20px}.avatar{width:42px;height:42px}.votes{min-width:54px}.votes small{display:none}.rank-card .actions{grid-column:3/5}.members{grid-template-columns:1fr}.gate-card{padding:20px}}
   </style>
 </head>
 <body>
-  <div class="ticker"><span>⚠ UNOFFICIAL PLEDGE CLASS RANKINGS &nbsp; • &nbsp; VOTE RESPONSIBLY &nbsp; • &nbsp; NO ANONYMOUS COMMENTS &nbsp; • &nbsp; DOOSH OF THE WEEK LOADING &nbsp; • &nbsp; </span></div>
-  <header>
-    <div class="wrap nav">
-      <div class="brand"><div class="brandmark">D</div> DOOSH RANKINGS</div>
-      <nav>
-        <button class="active" data-view="rankings">Rankings</button>
-        <button data-view="battle">Battle</button>
-        <button data-view="vote">Vote</button>
-        <button data-view="members">Members</button>
-      </nav>
+  <div id="gate" class="gate">
+    <div class="gate-card">
+      <div class="gate-logo">D</div>
+      <h2>Dooshers only.</h2>
+      <p class="sub">Answer all three questions to enter Doosh Rankings.</p>
+      <form id="gateForm">
+        <div class="q"><label for="q1">Who MKs favorite brother?</label><input id="q1" autocomplete="off" required /></div>
+        <div class="q"><label for="q2">Who is PCP</label><input id="q2" autocomplete="off" required /></div>
+        <div class="q"><label for="q3">What is the official name of the dooshers</label><input id="q3" autocomplete="off" required /></div>
+        <button class="btn primary" style="width:100%;margin-top:6px" type="submit">Enter Rankings</button>
+        <div id="gateError" class="gate-error"></div>
+      </form>
+      <div class="gate-note">Answers are not case sensitive.</div>
     </div>
-  </header>
+  </div>
 
-  <main class="wrap">
-    <div class="hero">
-      <div class="eyebrow">● Live pledge-class leaderboard</div>
-      <h1>DOUCHE<br><span class="red">RANKINGS</span></h1>
-      <p>The completely unofficial ranking of who is moving up, falling off, and achieving generational doosh status.</p>
-      <div class="hero-actions">
-        <button class="btn primary" onclick="go('battle')">Start a Battle</button>
-        <button class="btn" onclick="go('rankings')">View Rankings</button>
+  <div id="app" class="hidden">
+    <div class="ticker"><span>⚠ UNOFFICIAL PLEDGE CLASS RANKINGS &nbsp; • &nbsp; UPVOTE THE BIGGEST DOOSH &nbsp; • &nbsp; 69 DOOSHERS IN THE FIELD &nbsp; • &nbsp; PHOTO REQUESTS OPEN &nbsp; • &nbsp;</span></div>
+    <header>
+      <div class="wrap nav">
+        <div class="brand"><div class="brandmark">D</div> DOOSH RANKINGS</div>
+        <nav><button class="active" data-view="rankings">Rankings</button><button data-view="members">Members</button></nav>
+        <button class="lockbtn" id="lockBtn">Lock</button>
       </div>
+    </header>
+    <main class="wrap">
+      <div class="hero"><div class="eyebrow">● Live shared leaderboard</div><h1>DOOSH<br><span class="red">RANKINGS</span></h1><p>One leaderboard. Sixty-nine pledges. Rankings are decided by upvotes.</p></div>
+      <div class="stats">
+        <div class="stat"><strong id="memberCount">69</strong><span>Dooshers ranked</span></div>
+        <div class="stat"><strong id="totalVotes">—</strong><span>Total upvotes</span></div>
+        <div class="stat"><strong id="leaderName">Loading…</strong><span>Current #1</span></div>
+      </div>
+      <section id="rankings" class="view active">
+        <div class="section-head"><div><h2>Official Rankings</h2><p>Highest upvote count takes the top spot.</p></div><div class="status">● LIVE</div></div>
+        <div class="toolbar"><input class="search" id="rankSearch" placeholder="Search a doosher…" /></div>
+        <div id="rankingList"></div>
+      </section>
+      <section id="members" class="view">
+        <div class="section-head"><div><h2>Pledge Class</h2><p>All 69 names from the roster.</p></div></div>
+        <div class="toolbar"><input class="search" id="memberSearch" placeholder="Search members…" /></div>
+        <div class="members" id="memberGrid"></div>
+      </section>
+    </main>
+    <div class="foot">Doosh Rankings is an unofficial joke ranking site. Shared vote counts are powered by <a href="https://counterapi.com/" target="_blank" rel="noopener">CounterAPI</a>.</div>
+  </div>
+
+  <div id="photoModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head"><div><div style="color:#8f8f99;font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.07em">Photo request</div><h3 id="photoTitle">Request a photo</h3></div><button class="btn" id="closePhoto" type="button">✕</button></div>
+      <input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp,image/heic,image/heif" class="hidden" />
+      <div id="dropzone" class="dropzone" tabindex="0"><strong>Drop an image here</strong>or click to choose a file</div>
+      <div id="preview" class="preview"><img id="previewImg" alt="" /><div class="preview-info"><strong id="fileName"></strong><span id="fileMeta"></span></div></div>
+      <div class="modal-note">Submitting opens a GitHub photo-request ticket. When your browser supports it, the image is copied to your clipboard so you can paste it straight into the ticket.</div>
+      <div class="modal-actions"><button class="btn" id="cancelPhoto" type="button">Cancel</button><button class="btn primary" id="submitPhoto" type="button">Continue Request</button></div>
     </div>
-    <div class="stats">
-      <div class="stat"><strong id="memberCount">12</strong><span>Pledges ranked</span></div>
-      <div class="stat"><strong id="battleCount">0</strong><span>Your battles</span></div>
-      <div class="stat"><strong>Weekly</strong><span>Official reset</span></div>
-    </div>
-
-    <section id="rankings" class="view active">
-      <div class="section-head"><div><h2>Official Rankings</h2><p>Updated from battle rating.</p></div><div class="status">● LIVE</div></div>
-      <div class="movers">
-        <div class="mover"><div class="mover-label">Biggest Riser</div><div class="mover-row"><div class="miniavatar">P3</div><div><strong>Pledge 03</strong><div class="tag">Unforced Error Specialist</div></div><div class="delta up">▲ +4</div></div></div>
-        <div class="mover"><div class="mover-label">Biggest Fall</div><div class="mover-row"><div class="miniavatar">P8</div><div><strong>Pledge 08</strong><div class="tag">Formerly Respectable</div></div><div class="delta down">▼ -3</div></div></div>
-      </div>
-      <div id="rankingList"></div>
-    </section>
-
-    <section id="battle" class="view">
-      <div class="section-head"><div><h2>Doosh Battle</h2><p>Pick the bigger doosh. Winner gains rating.</p></div></div>
-      <div class="battle-shell">
-        <div class="battle-grid">
-          <div class="fighter" id="fighterA"></div>
-          <div class="versus">VS</div>
-          <div class="fighter" id="fighterB"></div>
-        </div>
-        <div class="battle-note">This starter version saves votes on your device. Global shared voting can be connected to a database next.</div>
-      </div>
-    </section>
-
-    <section id="vote" class="view">
-      <div class="section-head"><div><h2>Quick Vote</h2><p>One pledge. One question.</p></div></div>
-      <div class="vote-card" id="voteCard"></div>
-    </section>
-
-    <section id="members" class="view">
-      <div class="section-head"><div><h2>Pledge Class</h2><p>Meet the current field.</p></div></div>
-      <div class="members" id="memberGrid"></div>
-    </section>
-  </main>
-
-  <div class="foot">Doosh Rankings is an unofficial joke ranking site. Keep profiles consensual and don’t post private information.</div>
+  </div>
   <div class="toast" id="toast"></div>
 
 <script>
-const baseMembers = [
-  {id:1,name:'Pledge 01',nick:'Professional Liability',rating:1247,delta:2},
-  {id:2,name:'Pledge 02',nick:'The Menace',rating:1210,delta:1},
-  {id:3,name:'Pledge 03',nick:'Unforced Error Specialist',rating:1176,delta:4},
-  {id:4,name:'Pledge 04',nick:'Executive Doosh',rating:1158,delta:0},
-  {id:5,name:'Pledge 05',nick:'Bad Decision Merchant',rating:1132,delta:-1},
-  {id:6,name:'Pledge 06',nick:'Aura Debt Collector',rating:1104,delta:2},
-  {id:7,name:'Pledge 07',nick:'Public Nuisance',rating:1085,delta:0},
-  {id:8,name:'Pledge 08',nick:'Formerly Respectable',rating:1059,delta:-3},
-  {id:9,name:'Pledge 09',nick:'The Instigator',rating:1038,delta:1},
-  {id:10,name:'Pledge 10',nick:'Questionable Judgment',rating:1012,delta:-2},
-  {id:11,name:'Pledge 11',nick:'Part-Time Menace',rating:995,delta:0},
-  {id:12,name:'Pledge 12',nick:'Under Investigation',rating:972,delta:-1},
-];
-const stored = JSON.parse(localStorage.getItem('doosh-rankings-v1') || 'null');
-let members = stored?.members || baseMembers;
-let battles = stored?.battles || 0;
-let quickVotes = stored?.quickVotes || {};
-let pair = [];
-let voteTarget = null;
+const rosterNames = ["JJ Livingston","Tyler","Connor colon","Nolan Hart","Jackson Gerardi","Jacob Webb","Brooks Belisle","Cole Kaplan","Harrison Satre","Jake wells","Alex Batista","Ethan Follick","Gavin Streit","Josh Krief","Ryan Tully","Taryn Nachtrieb","Easton Schnall","Dylan Stiles","Andrew Colosimo","Jackson Crowley","Finn Scherer","Karsten Richey","Marco Alberni","Connor Jones","Emiliano Sierra","Athen Karas","Matias","Gabe Detraux","Graham Resavage","Corey Shook","Drew Geyer","Evan Jung","Jaden Judd","Sehej Mehta","Adrian Fonseca","Jordan cross","Carson Long","Louis DiStefano","Spencer kern","Ryan Erwin","Alejandro Menendez","Dawson Ivan","Evan kass","Juan Velazco","Lucas Justo","maksym zherukha","Ryan Baxley","Carter Jaye","Seb Russell","Crew Gibson","Gavin Tedesco","Richard Burke","Noah Marsh","Mike Rinaldi","Ethan Coffina","Enrique Macias","Jacob Law","Dylan Vertesch","Sebastian Betancourt","Theo Jauregui","Sean Vasquez","Andrew Loebig","Jackson Sadler","Carson Satin","Greyson Sanders","Lucas Franchak","Kai Gordon","Lucas","Grant Kessler"];
+const members = rosterNames.map(function(name,index){return{id:index+1,name:name,slug:name.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''),votes:0,loaded:false}});
+const COUNTER_NS='doosh-rankings-pikapp-26-v1';
+const VOTED_KEY='doosh-upvotes-v2';
+let voted=new Set(JSON.parse(localStorage.getItem(VOTED_KEY)||'[]'));
+let selectedMember=null,selectedFile=null;
 
-function save(){localStorage.setItem('doosh-rankings-v1',JSON.stringify({members,battles,quickVotes}))}
-function initials(m){return 'P'+String(m.id).padStart(2,'0')}
-function deltaHTML(d){if(d>0)return '<span class="up">▲ +'+d+'</span>';if(d<0)return '<span class="down">▼ '+d+'</span>';return '<span class="flat">—</span>'}
-function rankLabel(r){if(r>=1225)return 'Generational Doosh';if(r>=1150)return 'Elite Doosh';if(r>=1080)return 'Certified Doosh';if(r>=1020)return 'Tool';return 'Civilian';}
+const allowedHashes={
+  q1:['3b2e41f89cf44ea23ed00f68cb33ff83893a84ec6f654bc809836a091cb77d65'],
+  q2:['72831924521887e6638e686d6d004cd6cefe48168d2d4e2c40d29115b9c611b9','ff06535ac1029cca2fc2b86ac7355a7b4e0b8d839fc76b51d30833f4e1347ddc','df54bf6ad645652f9ad233962de4f9579df523872e2086a8cb2429612f3468ae','dac5be67dba88500ea1138a8b4052f201c2b799195eb10d91ac1771633d4c9ab'],
+  q3:['c821004cda28794b11dd685ad491826ec7622686b69a5171d005aa1581827f31','596328ec7d63edae06a1b335f73139adcc743b93be8f95e243ef0d56fc58c447','b1653105a60cb9542c727f0a735902004764602df4ac6886383a3f1ec61c35cc']
+};
+function normalizeAnswer(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
+async function sha256(v){const data=new TextEncoder().encode(normalizeAnswer(v));const digest=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(digest)).map(function(b){return b.toString(16).padStart(2,'0')}).join('')}
+async function verifyGate(){const vals=[q1.value,q2.value,q3.value];const h=await Promise.all(vals.map(sha256));return allowedHashes.q1.includes(h[0])&&allowedHashes.q2.includes(h[1])&&allowedHashes.q3.includes(h[2])}
+function unlock(){sessionStorage.setItem('doosh-access','1');gate.classList.add('hidden');app.classList.remove('hidden');renderRankings();renderMembers();loadAllVotes()}
+function lock(){sessionStorage.removeItem('doosh-access');app.classList.add('hidden');gate.classList.remove('hidden');gateForm.reset();gateError.textContent='';window.scrollTo(0,0)}
+gateForm.addEventListener('submit',async function(e){e.preventDefault();gateError.textContent='Checking…';if(await verifyGate()){gateError.textContent='';unlock()}else gateError.textContent='At least one answer is wrong.'});
+lockBtn.addEventListener('click',lock);
+
+function initials(name){const p=name.trim().split(/\s+/).filter(Boolean);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
+function esc(s){return s.replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
+function ranked(filter){const q=(filter||'').toLowerCase().trim();return members.filter(function(m){return!q||m.name.toLowerCase().includes(q)}).slice().sort(function(a,b){return b.votes-a.votes||a.name.localeCompare(b.name)})}
+function btnText(m){return voted.has(m.slug)?'▲ Upvoted':'▲ Upvote'}
 function renderRankings(){
-  members.sort((a,b)=>b.rating-a.rating);
-  document.getElementById('rankingList').innerHTML = members.map((m,i)=>`
-    <div class="rank-card ${i<3?'top':''}">
-      <div class="rank-num">#${i+1}</div><div class="avatar">${initials(m)}</div>
-      <div class="person"><h3>${m.name}</h3><div class="tag">${m.nick} · ${rankLabel(m.rating)}</div></div>
-      <div class="rating"><strong>${m.rating} DR</strong><small>${deltaHTML(m.delta)}</small></div>
-    </div>`).join('');
-  document.getElementById('memberCount').textContent=members.length;
-  document.getElementById('battleCount').textContent=battles;
-}
-function newPair(){
-  const a=members[Math.floor(Math.random()*members.length)];
-  let b=a; while(b.id===a.id)b=members[Math.floor(Math.random()*members.length)];
-  pair=[a,b]; renderBattle();
-}
-function renderBattle(){
-  pair.forEach((m,i)=>{
-    document.getElementById(i===0?'fighterA':'fighterB').innerHTML=`
-      <div class="bigavatar">${initials(m)}</div><h3>${m.name}</h3><p>${m.nick}</p>
-      <button class="btn primary" onclick="pick(${m.id})">Bigger Doosh</button>`;
-  });
-}
-function pick(id){
-  const winner=members.find(m=>m.id===id), loser=members.find(m=>pair.some(p=>p.id===m.id)&&m.id!==id);
-  const expected=1/(1+Math.pow(10,(loser.rating-winner.rating)/400));
-  const gain=Math.max(8,Math.round(28*(1-expected)));
-  winner.rating+=gain; loser.rating-=gain; battles++; save(); renderRankings(); toast(winner.name+' +'+gain+' DR'); newPair();
-}
-function newVote(){
-  voteTarget=members[Math.floor(Math.random()*members.length)];
-  const v=quickVotes[voteTarget.id]||{yes:0,no:0};
-  document.getElementById('voteCard').innerHTML=`
-    <div class="bigavatar">${initials(voteTarget)}</div><h3>${voteTarget.name}</h3><p>${voteTarget.nick}</p>
-    <h4>Certified doosh?</h4>
-    <div class="vote-actions"><button class="btn primary" onclick="quickVote(true)">Absolutely</button><button class="btn" onclick="quickVote(false)">Not today</button></div>
-    <div class="battle-note">Your device: ${v.yes} yes · ${v.no} no</div>`;
-}
-function quickVote(yes){
-  const v=quickVotes[voteTarget.id]||{yes:0,no:0}; yes?v.yes++:v.no++; quickVotes[voteTarget.id]=v; save(); toast('Vote counted'); newVote();
+  const all=ranked(''),q=rankSearch.value,list=ranked(q);
+  rankingList.innerHTML=list.map(function(m){const rank=all.findIndex(function(x){return x.slug===m.slug})+1;return '<div class="rank-card '+(rank<=3?'top':'')+'"><div class="rank-num">#'+rank+'</div><div class="avatar">'+initials(m.name)+'</div><div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">'+(m.loaded?'Ranked by shared upvotes':'Loading votes…')+'</div></div><div class="votes"><strong>'+(m.loaded?m.votes:'…')+'</strong><small>upvotes</small></div><div class="actions" style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end"><button class="btn '+(voted.has(m.slug)?'upvoted':'primary')+'" '+(voted.has(m.slug)?'disabled':'')+' onclick="castVote(\''+m.slug+'\')">'+btnText(m)+'</button><button class="btn photo-btn" onclick="openPhotoRequest(\''+m.slug+'\')">Request Photo</button></div></div>'}).join('')||'<div class="tag" style="padding:22px;text-align:center">No matches.</div>';
+  refreshStats();
 }
 function renderMembers(){
-  document.getElementById('memberGrid').innerHTML=members.map(m=>`<div class="member"><div class="avatar">${initials(m)}</div><h3>${m.name}</h3><p>${m.nick}</p></div>`).join('');
+  const q=memberSearch.value.toLowerCase().trim(),list=members.filter(function(m){return!q||m.name.toLowerCase().includes(q)}).slice().sort(function(a,b){return a.name.localeCompare(b.name)});
+  memberGrid.innerHTML=list.map(function(m){return '<div class="member"><div class="avatar">'+initials(m.name)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">'+(m.loaded?m.votes:'…')+' upvotes</div><div class="member-actions"><button class="btn '+(voted.has(m.slug)?'upvoted':'primary')+'" '+(voted.has(m.slug)?'disabled':'')+' onclick="castVote(\''+m.slug+'\')">'+btnText(m)+'</button><button class="btn photo-btn" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button></div></div>'}).join('');
 }
-function go(id){
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
-  if(id==='battle')newPair(); if(id==='vote')newVote(); if(id==='members')renderMembers();
-  window.scrollTo({top:250,behavior:'smooth'});
-}
-document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1300)}
-renderRankings(); newPair(); newVote(); renderMembers();
+function counterUrl(m,readOnly){let u='https://counterapi.com/api/'+encodeURIComponent(COUNTER_NS)+'/upvote/'+encodeURIComponent(m.slug);return u+(readOnly?'?readOnly=true':'?behavior=vote')}
+async function fetchVotes(m){try{const r=await fetch(counterUrl(m,true),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();m.votes=Number(d.value)||0}catch(e){}m.loaded=true}
+async function loadAllVotes(){for(let i=0;i<members.length;i+=8){await Promise.all(members.slice(i,i+8).map(fetchVotes));renderRankings();renderMembers();await new Promise(function(r){setTimeout(r,90)})}}
+async function castVote(slug){const m=members.find(function(x){return x.slug===slug});if(!m||voted.has(slug))return;try{const r=await fetch(counterUrl(m,false),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();m.votes=Number(d.value)||m.votes+1;m.loaded=true;voted.add(slug);localStorage.setItem(VOTED_KEY,JSON.stringify(Array.from(voted)));renderRankings();renderMembers();toast('Upvoted '+m.name)}catch(e){toast('Vote did not go through. Try again.')}}
+function refreshStats(){memberCount.textContent=members.length;totalVotes.textContent=members.every(function(m){return m.loaded})?members.reduce(function(s,m){return s+m.votes},0):'…';const l=ranked('')[0];leaderName.textContent=l&&l.loaded?l.name:'Loading…'}
+rankSearch.addEventListener('input',renderRankings);memberSearch.addEventListener('input',renderMembers);
+document.querySelectorAll('nav button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.view').forEach(function(v){v.classList.toggle('active',v.id===b.dataset.view)});document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('active',x===b)});b.dataset.view==='rankings'?renderRankings():renderMembers();window.scrollTo({top:230,behavior:'smooth'})})});
+
+function openPhotoRequest(slug){selectedMember=members.find(function(m){return m.slug===slug});selectedFile=null;photoTitle.textContent='Photo for '+selectedMember.name;preview.classList.remove('show');photoInput.value='';photoModal.classList.add('show')}
+function closePhotoRequest(){photoModal.classList.remove('show');selectedFile=null}
+function useFile(file){if(!file)return;if(!file.type.startsWith('image/')){toast('Please choose an image file.');return}if(file.size>10*1024*1024){toast('Keep the image under 10 MB.');return}selectedFile=file;previewImg.src=URL.createObjectURL(file);fileName.textContent=file.name;fileMeta.textContent=(file.size/1024/1024).toFixed(2)+' MB';preview.classList.add('show')}
+dropzone.addEventListener('click',function(){photoInput.click()});dropzone.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();photoInput.click()}});photoInput.addEventListener('change',function(){useFile(photoInput.files[0])});
+['dragenter','dragover'].forEach(function(t){dropzone.addEventListener(t,function(e){e.preventDefault();dropzone.classList.add('drag')})});['dragleave','drop'].forEach(function(t){dropzone.addEventListener(t,function(e){e.preventDefault();dropzone.classList.remove('drag')})});dropzone.addEventListener('drop',function(e){useFile(e.dataTransfer.files[0])});
+closePhoto.addEventListener('click',closePhotoRequest);cancelPhoto.addEventListener('click',closePhotoRequest);photoModal.addEventListener('click',function(e){if(e.target===photoModal)closePhotoRequest()});
+submitPhoto.addEventListener('click',async function(){if(!selectedMember||!selectedFile){toast('Drop a picture first.');return}let copied=false;try{if(window.ClipboardItem&&navigator.clipboard&&navigator.clipboard.write){const item={};item[selectedFile.type]=selectedFile;await navigator.clipboard.write([new ClipboardItem(item)]);copied=true}}catch(e){}const title='Photo Request: '+selectedMember.name;const body='Photo request for **'+selectedMember.name+'**.\\n\\n'+(copied?'The image was copied to my clipboard from Doosh Rankings. I will paste it below before submitting.':'I selected an image on Doosh Rankings. I will drag the image into this issue below before submitting.')+'\\n\\nPlease review this image before adding it to the site.';window.open('https://github.com/lucasjusto014-droid/Workout-app/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body),'_blank','noopener');closePhotoRequest();toast(copied?'GitHub opened — paste the copied image into the issue.':'GitHub opened — drag the image into the issue and submit.')});
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(function(){t.classList.remove('show')},2200)}
+if(sessionStorage.getItem('doosh-access')==='1')unlock();
 </script>
 </body>
 </html>
