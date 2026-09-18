@@ -79,7 +79,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     </section>
 
     <section id="pvp" class="view">
-      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. The site rotates through the whole PC before reshuffling.</p></div><div class="status">HEAD-TO-HEAD · v2</div></div>
+      <div class="section-head"><div><h2>Doosh PvP</h2><p>Pick who is dooshier. Only ranked people with a photo are included, and the site rotates through all of them before reshuffling.</p></div><div class="status">HEAD-TO-HEAD · v2</div></div>
       <div class="pvp-wrap">
         <div id="pvpStage" class="pvp-stage">
           <div class="pvp-card"><div class="tag">Loading matchup…</div></div>
@@ -119,6 +119,12 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
           <h3>Requests</h3>
           <div class="tag">Review incoming super-upvote requests.</div>
           <button id="openSuperRequests" class="btn super small" style="margin-top:10px">Open Super Upvote Requests</button>
+          <div style="height:18px"></div>
+          <h3>Photo roster</h3>
+          <div class="tag">Import pictures from the pledge spreadsheet. Only people already in the rankings are matched; nobody new is added.</div>
+          <input id="photoSheetInput" type="file" accept=".xlsx" class="hidden">
+          <button id="importPhotoSheetBtn" class="btn small" style="margin-top:10px">Import Photos from Sheet</button>
+          <div id="photoImportStatus" class="tag" style="margin-top:8px"></div>
         </div>
         <div class="panel">
           <h3>Roster & ranking controls</h3>
@@ -177,6 +183,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
 
 <div id="toast" class="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
 const REPO='lucasjusto014-droid/Workout-app';
 const COUNTER_NS='pc-doosh-rankings-v2';
@@ -198,6 +205,7 @@ async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEnco
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function initials(name){const p=name.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
 function activeMembers(){return members.filter(m=>m.active!==false)}
+function pvpMembers(){return activeMembers().filter(m=>!!m.photo)}
 function memberBySlug(slug){return members.find(m=>m.slug===slug)}
 function avatarHTML(m){return m.photo?'<img src="'+esc(m.photo)+'" alt="">':initials(m.name)}
 function counterUrl(action,slug,readOnly,userId){
@@ -322,14 +330,14 @@ async function loadPvpStat(m){
   return s;
 }
 function shufflePvpQueue(){
-  pvpQueue=activeMembers().slice();
+  pvpQueue=pvpMembers().slice();
   for(let i=pvpQueue.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
     [pvpQueue[i],pvpQueue[j]]=[pvpQueue[j],pvpQueue[i]];
   }
 }
 function choosePvpPair(){
-  const pool=activeMembers();
+  const pool=pvpMembers();
   if(pool.length<2){pvpPair=[];renderPvp();return}
   const activeSlugs=new Set(pool.map(m=>m.slug));
   pvpQueue=pvpQueue.filter(m=>activeSlugs.has(m.slug));
@@ -343,7 +351,7 @@ function choosePvpPair(){
 }
 function renderPvp(){
   const stage=el('pvpStage');if(!stage)return;
-  if(pvpPair.length!==2){stage.innerHTML='<div class="pvp-card"><div class="tag">No matchup available.</div></div>';return}
+  if(pvpPair.length!==2){stage.innerHTML='<div class="pvp-card"><div class="tag">No photo matchup available yet. Master can import the pledge spreadsheet photos.</div></div>';return}
   const a=pvpPair[0],b=pvpPair[1];
   const card=m=>{
     const s=pvpStat(m.slug);
@@ -387,7 +395,7 @@ async function pickDooshier(winnerSlug){
 }
 function renderPvpLeaders(){
   const box=el('pvpLeaders');if(!box)return;
-  const standings=activeMembers().slice().sort((a,b)=>{
+  const standings=pvpMembers().slice().sort((a,b)=>{
     const sa=pvpStat(a.slug),sb=pvpStat(b.slug);
     if(sa.loaded!==sb.loaded)return sb.loaded-sa.loaded;
     return sb.wins-sa.wins||sa.losses-sb.losses||a.name.localeCompare(b.name);
@@ -400,7 +408,7 @@ function renderPvpLeaders(){
   }).join('');
 }
 async function loadPvpLeaderboard(){
-  const list=activeMembers();
+  const list=pvpMembers();
   for(let i=0;i<list.length;i+=10){
     await Promise.all(list.slice(i,i+10).map(loadPvpStat));
     renderPvpLeaders();
@@ -642,6 +650,194 @@ function adminPhotoDirect(slug){
   };
   input.click();
 }
+
+const PHOTO_NAME_ALIASES={
+  'gabe detraux':'gabe-detraux',
+  'carter jaye cj':'cj',
+  'carter jaye':'cj',
+  'jacob law':'jacob-law',
+  'jacob webb':'jacob-webb',
+  'jake wells':'jake-wells',
+  'lucas justo':'lucas-justo',
+  'easton schnall':'easton-schnall',
+  'colin mullooly':'collin-mulluloy',
+  'matias espina':'matias',
+  'sean vasquez':'sean-vasquez',
+  'ethan coffina':'ethan-coffina',
+  'jackson sadler':'jackson-sadler',
+  'sehej mehta':'sehej-mehta',
+  'evan kass':'evan-kass',
+  'gavin tedesco':'gavin-tedesco',
+  'gavin streit':'gavin-streit',
+  'sam atwater':'sam-atwater',
+  'evan jung':'evan-jung',
+  'alex batista':'alex-batista',
+  'jordan cross':'jordan-cross',
+  'emiliano sierra':'emiliano-sierra',
+  'adrian fonseca':'adrian-fonseca',
+  'graham resavage':'graham-resavage',
+  'finn scherer':'finn-scherer',
+  'andrew colosimo':'andrew-colosimo',
+  'brooks belisle':'brooks-belisle',
+  'dax marzano':'dax-marzano',
+  'louis distefano':'louis-distefano',
+  'carson satin':'carson-satin',
+  'amir vaelizadeh':'amir-valizedah',
+  'amir valizedah':'amir-valizedah',
+  'baxly hines':'baxly-h',
+  'baxly h':'baxly-h',
+  'griffin kuhlman':'griffin-kuhlman',
+  'noah marsh':'noah-marsh',
+  'sebastian betancourt':'sebastian-betancourt',
+  'sebby bennancourt':'sebastian-betancourt',
+  'maksym zherukha':'maksym-zherukha',
+  'maksym zheruka':'maksym-zherukha',
+  'connor colon':'connor-colon',
+  'conor colon':'connor-colon',
+  'athen karas':'athen-karas',
+  'theo jauregui':'theo-jauregui',
+  'theo jauregi':'theo-jauregui',
+  'kai gordon':'kai-gordon',
+  'grant kessler':'grant-kessler',
+  'connor jones':'connor-jones',
+  'marco alberni':'marco-alberni',
+  'taryn nachtrieb':'taryn-nachtrieb',
+  'taryn n':'taryn-nachtrieb',
+  'jaden judd':'jaden-judd',
+  'jackson gerardi':'jackson-gerardi',
+  'ryan baxley':'ryan-baxley'
+};
+function normalizePhotoName(s){
+  return String(s||'').toLowerCase().replace(/\([^)]*\)/g,' ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+}
+function xmlDoc(text){return new DOMParser().parseFromString(text,'application/xml')}
+function allByLocalName(root,name){return Array.from(root.getElementsByTagNameNS('*',name))}
+function firstByLocalName(root,name){return allByLocalName(root,name)[0]||null}
+function sharedStringText(si){return allByLocalName(si,'t').map(x=>x.textContent||'').join('')}
+function sheetCellText(cell,shared){
+  const type=cell.getAttribute('t');
+  if(type==='inlineStr')return allByLocalName(cell,'t').map(x=>x.textContent||'').join('');
+  const v=firstByLocalName(cell,'v');
+  if(!v)return '';
+  return type==='s'?(shared[Number(v.textContent)]||''):v.textContent||'';
+}
+async function resizePhotoBlob(blob){
+  const url=URL.createObjectURL(blob);
+  try{
+    const img=new Image();
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url});
+    const max=640,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+    const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');ctx.fillStyle='#141418';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+    return await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.8));
+  }finally{URL.revokeObjectURL(url)}
+}
+async function importPhotoSheet(file){
+  if(!adminUnlocked||!requireGitHub())return;
+  if(!window.JSZip){toast('Spreadsheet importer did not load. Refresh and try again.');return}
+  const status=el('photoImportStatus');
+  status.textContent='Reading spreadsheet…';
+  try{
+    const zip=await JSZip.loadAsync(await file.arrayBuffer());
+    const sharedFile=zip.file('xl/sharedStrings.xml');
+    const shared=[];
+    if(sharedFile){
+      const sdoc=xmlDoc(await sharedFile.async('text'));
+      allByLocalName(sdoc,'si').forEach(si=>shared.push(sharedStringText(si)));
+    }
+
+    const sheetFile=zip.file('xl/worksheets/sheet1.xml');
+    const drawingFile=zip.file('xl/drawings/drawing1.xml');
+    const relsFile=zip.file('xl/drawings/_rels/drawing1.xml.rels');
+    if(!sheetFile||!drawingFile||!relsFile)throw new Error('No picture sheet found');
+
+    const sdoc=xmlDoc(await sheetFile.async('text'));
+    const rowNames=new Map();
+    allByLocalName(sdoc,'row').forEach(row=>{
+      const rowNum=Number(row.getAttribute('r'));
+      const aCell=allByLocalName(row,'c').find(cell=>(cell.getAttribute('r')||'').startsWith('A'));
+      if(aCell)rowNames.set(rowNum,sheetCellText(aCell,shared));
+    });
+
+    const rdoc=xmlDoc(await relsFile.async('text'));
+    const relMap=new Map();
+    allByLocalName(rdoc,'Relationship').forEach(rel=>relMap.set(rel.getAttribute('Id'),rel.getAttribute('Target')));
+
+    const ddoc=xmlDoc(await drawingFile.async('text'));
+    const matches=[];
+    for(const anchor of Array.from(ddoc.documentElement.children)){
+      const from=firstByLocalName(anchor,'from');
+      const pic=firstByLocalName(anchor,'pic');
+      if(!from||!pic)continue;
+      const rowNode=firstByLocalName(from,'row');
+      const blip=firstByLocalName(pic,'blip');
+      if(!rowNode||!blip)continue;
+      const excelRow=Number(rowNode.textContent)+1;
+      const sourceName=rowNames.get(excelRow)||'';
+      const norm=normalizePhotoName(sourceName);
+      let slug=PHOTO_NAME_ALIASES[norm];
+      if(!slug){
+        const exact=members.find(m=>normalizePhotoName(m.name)===norm);
+        if(exact)slug=exact.slug;
+      }
+      const member=slug&&memberBySlug(slug);
+      if(!member||member.active===false)continue; // critical: never add sheet-only people
+      const rid=blip.getAttribute('r:embed')||blip.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','embed');
+      let target=relMap.get(rid);
+      if(!target)continue;
+      target=target.replace(/^\.\.\//,'xl/');
+      const imageFile=zip.file(target);
+      if(!imageFile)continue;
+      matches.push({member,imageFile});
+    }
+
+    // Deduplicate by current ranked slug.
+    const dedup=new Map(matches.map(x=>[x.member.slug,x]));
+    const items=Array.from(dedup.values());
+    if(!items.length)throw new Error('No ranked photo matches found');
+
+    status.textContent='Matched '+items.length+' ranked people. Uploading photos…';
+    const photoPaths=new Map();
+    let done=0;
+    for(const item of items){
+      const raw=await item.imageFile.async('blob');
+      const jpg=await resizePhotoBlob(raw);
+      const path='photos/'+item.member.slug+'.jpg';
+      await putRepoFile(path,jpg,'Import '+item.member.name+' photo');
+      photoPaths.set(item.member.slug,path+'?v='+Date.now());
+      done++;
+      status.textContent='Uploading photos… '+done+'/'+items.length;
+    }
+
+    await mutateRepoData('Import pledge sheet photos',data=>{
+      for(const m of data.members||[])m.photo=null;
+      for(const [slug,path] of photoPaths){
+        const m=(data.members||[]).find(x=>x.slug===slug);
+        if(m)m.photo=path;
+      }
+      return true;
+    });
+
+    pvpQueue=[];pvpStats=new Map();choosePvpPair();renderPvpLeaders();
+    status.textContent='Done — '+items.length+' ranked people have photos. People without photos are excluded from PvP.';
+    toast('Photo roster imported.');
+  }catch(e){
+    console.error(e);
+    status.textContent='Import failed. Make sure this is the pledge spreadsheet with embedded photos.';
+    toast('Photo import failed.');
+  }
+}
+el('importPhotoSheetBtn').addEventListener('click',()=>{
+  if(!requireGitHub())return;
+  el('photoSheetInput').value='';
+  el('photoSheetInput').click();
+});
+el('photoSheetInput').addEventListener('change',()=>{
+  const file=el('photoSheetInput').files&&el('photoSheetInput').files[0];
+  if(file)importPhotoSheet(file);
+});
+
 el('openSuperRequests').addEventListener('click',()=>window.open('https://github.com/'+REPO+'/issues?q=is%3Aissue+is%3Aopen+%22Super+Upvote+Request%22','_blank','noopener'));
 
 function presenceBucket(offsetMinutes=0){
