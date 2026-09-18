@@ -159,7 +159,8 @@ let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
 
 function el(id){return document.getElementById(id)}
 function norm(v){return v.toLowerCase().trim().replace(/\s+/g,' ')}
-async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}\nasync function credentialHash(email,password){const raw=email.trim().toLowerCase()+'\\n'+password;const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function hash(v){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm(v)));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function credentialHash(email,password){const raw=email.trim().toLowerCase()+'\n'+password;const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function initials(name){const p=name.trim().split(/\s+/);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()}
 function activeMembers(){return members.filter(m=>m.active!==false)}
