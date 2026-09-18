@@ -70,7 +70,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
   </header>
 
   <main class="wrap">
-    <div class="hero"><div class="eyebrow">● PC leaderboard</div><h1>PC DOOSH<br><span class="red">RANKINGS</span></h1><p>Shared upvotes and downvotes decide the leaderboard. Super upvotes are requests that go to the admin for review.</p></div>
+    <div class="hero"><div class="eyebrow">● PC leaderboard</div><h1>PC DOOSH<br><span class="red">RANKINGS</span></h1><p>Upvotes, downvotes and head-to-head results feed the Doosh Score. The displayed score is always a whole number.</p></div>
     <div class="stats">
       <div class="stat"><strong id="memberCount">—</strong><span>Active pledges</span></div>
       <div class="stat"><strong id="reactionCount">—</strong><span>Total reactions</span></div>
@@ -78,7 +78,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
     </div>
 
     <section id="rankings" class="view active">
-      <div class="section-head"><div><h2>Official Rankings</h2><p>Score = upvotes − downvotes.</p></div><div class="status">● LIVE</div></div>
+      <div class="section-head"><div><h2>Official Rankings</h2><p>Doosh Score combines votes with low-volatility head-to-head results.</p></div><div class="status">● LIVE</div></div>
       <div class="toolbar"><input id="rankSearch" class="search" placeholder="Search a pledge…"></div>
       <div id="rankingList"></div>
     </section>
@@ -90,7 +90,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
           <div class="pvp-card"><div class="tag">Loading matchup…</div></div>
         </div>
         <div class="pvp-bottom">
-          <div class="tag"><strong style="color:#fff">PvP AFFECTS MAIN RANKINGS.</strong> Winner = +1 upvote. Loser = +1 downvote.</div>
+          <div class="tag"><strong style="color:#fff">PvP AFFECTS MAIN RANKINGS.</strong> Even matchups move about 1 point. Expected wins move less; major upsets can move up to 3.</div>
           <button id="skipPvpBtn" class="btn small">Skip Matchup</button>
         </div>
         <div class="pvp-leaderboard">
@@ -268,26 +268,49 @@ async function loadRoster(){
   try{
     const rr=await fetch('data.json?ts='+Date.now(),{cache:'no-store'});
     const d=await rr.json();
-    members=(d.members||[]).map(m=>({...m,adminAdjustment:Number(m.adminAdjustment||0),rankOverride:Number(m.rankOverride||0),upOffset:Number(m.upOffset||0),downOffset:Number(m.downOffset||0),up:0,down:0,upUndo:0,downUndo:0,loaded:false}));
+    members=(d.members||[]).map(m=>({...m,adminAdjustment:Number(m.adminAdjustment||0),rankOverride:Number(m.rankOverride||0),upOffset:Number(m.upOffset||0),downOffset:Number(m.downOffset||0),pvpPlusOffset:Number(m.pvpPlusOffset||0),pvpMinusOffset:Number(m.pvpMinusOffset||0),up:0,down:0,upUndo:0,downUndo:0,pvpPlus:0,pvpMinus:0,loaded:false}));
   }catch(e){toast('Roster failed to load. Refresh the page.')}
 }
 async function loadVotes(){
   const list=activeMembers();
   for(let i=0;i<list.length;i+=8){
     await Promise.all(list.slice(i,i+8).map(async m=>{
-      const [up,down,upUndo,downUndo]=await Promise.all([
-        readCounter('upvote',m),readCounter('downvote',m),readCounter('upundo',m),readCounter('downundo',m)
+      const [up,down,upUndo,downUndo,pvpPlus,pvpMinus]=await Promise.all([
+        readCounter('upvote',m),readCounter('downvote',m),readCounter('upundo',m),readCounter('downundo',m),
+        readCounter('pvpplus',m),readCounter('pvpminus',m)
       ]);
-      m.up=up;m.down=down;m.upUndo=upUndo;m.downUndo=downUndo;m.loaded=true;
+      m.up=up;m.down=down;m.upUndo=upUndo;m.downUndo=downUndo;
+      m.pvpPlus=pvpPlus;m.pvpMinus=pvpMinus;m.loaded=true;
     }));
     renderRankings();renderMembers();
     await new Promise(r=>setTimeout(r,70));
   }
 }
+const PVP_UNIT=0.25;
 function effectiveUp(m){return Math.max(0,(m.up||0)-(m.upUndo||0)-(m.upOffset||0))}
 function effectiveDown(m){return Math.max(0,(m.down||0)-(m.downUndo||0)-(m.downOffset||0))}
+function effectivePvpPlus(m){return Math.max(0,(m.pvpPlus||0)-(m.pvpPlusOffset||0))}
+function effectivePvpMinus(m){return Math.max(0,(m.pvpMinus||0)-(m.pvpMinusOffset||0))}
+function pvpAdjustment(m){return (effectivePvpPlus(m)-effectivePvpMinus(m))*PVP_UNIT}
 function baseScore(m){return effectiveUp(m)-effectiveDown(m)}
-function score(m){return baseScore(m)+(Number(m.adminAdjustment)||0)}
+function score(m){return baseScore(m)+(Number(m.adminAdjustment)||0)+pvpAdjustment(m)}
+function displayScore(m){
+  const n=score(m);
+  return Math.sign(n)*Math.round(Math.abs(n));
+}
+function pvpSwing(winner,loser){
+  const ws=score(winner),ls=score(loser);
+  const gap=Math.abs(ws-ls);
+  let raw=1;
+  if(ws<ls){
+    // Upset: 1 point when even, scaling to a 3-point cap at a 40-point gap.
+    raw=Math.min(3,1+(gap/20));
+  }else if(ws>ls){
+    // Expected win: progressively smaller movement, with a quarter-point floor.
+    raw=Math.max(0.25,1-(gap/40));
+  }
+  return Math.max(PVP_UNIT,Math.min(3,Math.round(raw/PVP_UNIT)*PVP_UNIT));
+}
 function globalRanked(){
   const base=activeMembers().slice().sort((a,b)=>score(b)-score(a)||effectiveUp(b)-effectiveUp(a)||a.name.localeCompare(b.name));
   const pinned=base.filter(m=>Number(m.rankOverride)>0).sort((a,b)=>Number(a.rankOverride)-Number(b.rankOverride)||a.name.localeCompare(b.name));
@@ -313,7 +336,7 @@ function renderRankings(){
     return '<div class="rank-card '+(r<=3?'top':'')+'">'+
       '<div class="ranknum">#'+r+'</div><div class="avatar">'+avatarHTML(m)+'</div>'+
       '<div class="person"><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' &nbsp; ▼ '+(m.loaded?effectiveDown(m):'…')+(m.rankOverride?(' &nbsp; • master rank #'+m.rankOverride):'')+(m.adminAdjustment?(' &nbsp; • admin '+(m.adminAdjustment>0?'+':'')+m.adminAdjustment):'')+'</div></div>'+
-      '<div class="score"><strong>'+(m.loaded?score(m):'…')+'</strong><small>net score</small></div>'+
+      '<div class="score"><strong>'+(m.loaded?displayScore(m):'…')+'</strong><small>Doosh Score</small></div>'+
       '<div class="actions">'+
         '<button class="btn small '+(v==='up'?'good':'')+'" onclick="castVote(\''+m.slug+'\',\'up\')">'+(v==='up'?'↩ Undo Upvote':(v==='down'?'▲ Switch to Upvote':'▲ Upvote'))+'</button>'+
         '<button class="btn small '+(v==='down'?'bad':'')+'" onclick="castVote(\''+m.slug+'\',\'down\')">'+(v==='down'?'↩ Undo Downvote':(v==='up'?'▼ Switch to Downvote':'▼ Downvote'))+'</button>'+
@@ -328,7 +351,7 @@ function renderMembers(){
   const list=activeMembers().filter(m=>!q||m.name.toLowerCase().includes(q)).slice().sort((a,b)=>a.name.localeCompare(b.name));
   el('memberGrid').innerHTML=list.map(m=>{
     const v=state[m.slug];
-    return '<div class="member"><div class="avatar">'+avatarHTML(m)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' · ▼ '+(m.loaded?effectiveDown(m):'…')+' · Net '+(m.loaded?score(m):'…')+'</div><div class="member-actions">'+
+    return '<div class="member"><div class="avatar">'+avatarHTML(m)+'</div><h3>'+esc(m.name)+'</h3><div class="tag">▲ '+(m.loaded?effectiveUp(m):'…')+' · ▼ '+(m.loaded?effectiveDown(m):'…')+' · Score '+(m.loaded?displayScore(m):'…')+'</div><div class="member-actions">'+
     '<button class="btn small '+(v==='up'?'good':'')+'" onclick="castVote(\''+m.slug+'\',\'up\')">'+(v==='up'?'↩':'▲')+'</button>'+
     '<button class="btn small '+(v==='down'?'bad':'')+'" onclick="castVote(\''+m.slug+'\',\'down\')">'+(v==='down'?'↩':'▼')+'</button>'+
     '<button class="btn small super" onclick="openSuper(\''+m.slug+'\')">Super</button><button class="btn small" onclick="openPhotoRequest(\''+m.slug+'\')">Photo</button></div></div>'
@@ -408,36 +431,58 @@ function renderPvp(){
   };
   stage.innerHTML=card(a)+'<div class="pvp-vs">VS</div>'+card(b);
 }
+
+async function incrementPvpUnits(action,m,units,eventId){
+  const requests=[];
+  for(let i=0;i<units;i++){
+    requests.push(fetch(counterUrl(action,m.slug,false,eventId+'-'+i),{cache:'no-store'}));
+  }
+  const results=await Promise.all(requests);
+  if(results.some(r=>!r.ok))throw new Error('PvP score counter failed');
+}
 async function pickDooshier(winnerSlug){
   if(pvpBusy||pvpPair.length!==2)return;
   const winner=pvpPair.find(m=>m.slug===winnerSlug);
   const loser=pvpPair.find(m=>m.slug!==winnerSlug);
   if(!winner||!loser)return;
+
+  // Use the full hidden Doosh Scores before this result.
+  const swing=pvpSwing(winner,loser);
+  const units=Math.max(1,Math.round(swing/PVP_UNIT));
+
   pvpBusy=true;renderPvp();
   try{
     const eventId=DEVICE_ID+'-pvp-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-    const [pvpWinRes,pvpLossRes,upRes,downRes]=await Promise.all([
+    const [pvpWinRes,pvpLossRes]=await Promise.all([
       fetch(counterUrl('pvpwin',winner.slug,false,eventId+'-w'),{cache:'no-store'}),
-      fetch(counterUrl('pvploss',loser.slug,false,eventId+'-l'),{cache:'no-store'}),
-      fetch(counterUrl('upvote',winner.slug,false,eventId+'-up'),{cache:'no-store'}),
-      fetch(counterUrl('downvote',loser.slug,false,eventId+'-down'),{cache:'no-store'})
+      fetch(counterUrl('pvploss',loser.slug,false,eventId+'-l'),{cache:'no-store'})
     ]);
-    if(!pvpWinRes.ok||!pvpLossRes.ok||!upRes.ok||!downRes.ok)throw 0;
-    const [pvpWinData,pvpLossData,upData,downData]=await Promise.all([
-      pvpWinRes.json(),pvpLossRes.json(),upRes.json(),downRes.json()
+    if(!pvpWinRes.ok||!pvpLossRes.ok)throw new Error('PvP record failed');
+
+    // Store the rating move as quarter-point units. The decimal value never renders publicly.
+    await Promise.all([
+      incrementPvpUnits('pvpplus',winner,units,eventId+'-plus'),
+      incrementPvpUnits('pvpminus',loser,units,eventId+'-minus')
     ]);
+
+    const [pvpWinData,pvpLossData]=await Promise.all([pvpWinRes.json(),pvpLossRes.json()]);
     const ws=pvpStat(winner.slug),ls=pvpStat(loser.slug);
     ws.wins=Number(pvpWinData.value)||ws.wins+1;ws.loaded=true;
     ls.losses=Number(pvpLossData.value)||ls.losses+1;ls.loaded=true;
-    winner.up=Number(upData.value)||winner.up+1;
-    loser.down=Number(downData.value)||loser.down+1;
+
+    // CounterAPI can return briefly stale values, so update the hidden score locally
+    // by the exact number of quarter-point events we just recorded.
+    winner.pvpPlus=(Number(winner.pvpPlus)||0)+units;
+    loser.pvpMinus=(Number(loser.pvpMinus)||0)+units;
     winner.loaded=true;loser.loaded=true;
+
     pvpBusy=false;
     renderRankings();
     renderMembers();
     renderPvpLeaders();
     choosePvpPair();
   }catch(e){
+    console.error(e);
     pvpBusy=false;renderPvp();toast('PvP vote did not go through. Try again.');
   }
 }
@@ -576,10 +621,14 @@ function applyCommittedRoster(data){
       rankOverride:Number(m.rankOverride||0),
       upOffset:Number(m.upOffset||0),
       downOffset:Number(m.downOffset||0),
+      pvpPlusOffset:Number(m.pvpPlusOffset||0),
+      pvpMinusOffset:Number(m.pvpMinusOffset||0),
       up:Number(prev.up||0),
       down:Number(prev.down||0),
       upUndo:Number(prev.upUndo||0),
       downUndo:Number(prev.downUndo||0),
+      pvpPlus:Number(prev.pvpPlus||0),
+      pvpMinus:Number(prev.pvpMinus||0),
       loaded:!!prev.loaded
     };
   });
@@ -630,7 +679,7 @@ function renderAdminRoster(){
     const active=m.active!==false;
     const actualRank=active?order.findIndex(x=>x.slug===m.slug)+1:0;
     const manual=Number(m.rankOverride)||0;
-    const scoreText=m.loaded?('rank #'+actualRank+' · score '+score(m)+(manual?' · forced #'+manual:'')):((manual?'forced #'+manual:'votes loading'));
+    const scoreText=m.loaded?('rank #'+actualRank+' · score '+displayScore(m)+(manual?' · forced #'+manual:'')):((manual?'forced #'+manual:'votes loading'));
     return '<div class="admin-row"><div class="admin-person"><div class="avatar">'+avatarHTML(m)+'</div><div class="admin-person-text"><strong>'+esc(m.name)+(active?'':' <span style="color:#ff8a84">(removed)</span>')+'</strong><span>'+esc(m.slug)+' · '+scoreText+(m.photo?' · photo loaded':' · NO PHOTO')+'</span></div></div>'+
       '<div class="admin-actions">'+
       '<button class="btn small" onclick="adminSetRank(\''+m.slug+'\')">Rank</button>'+
@@ -895,11 +944,14 @@ async function adminSuperFive(slug){
 async function adminResetVotes(slug){
   if(!adminUnlocked||!requireGitHub())return;const m=memberBySlug(slug);if(!m)return;
   const up=effectiveUp(m),down=effectiveDown(m);
-  if(!confirm('Reset visible votes for '+m.name+'?\nCurrent: '+up+' up / '+down+' down'))return;
+  const pvpPlus=effectivePvpPlus(m),pvpMinus=effectivePvpMinus(m);
+  if(!confirm('Reset score activity for '+m.name+'?\nCurrent: '+up+' up / '+down+' down plus PvP adjustment'))return;
   await mutateRepoData('Reset '+m.name+' votes in PC Doosh Rankings',data=>{
     const x=data.members.find(x=>x.slug===slug);if(!x)return false;
     x.upOffset=Number(x.upOffset||0)+up;
     x.downOffset=Number(x.downOffset||0)+down;
+    x.pvpPlusOffset=Number(x.pvpPlusOffset||0)+pvpPlus;
+    x.pvpMinusOffset=Number(x.pvpMinusOffset||0)+pvpMinus;
     return true;
   });
 }
