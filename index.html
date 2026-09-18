@@ -181,7 +181,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
 <div id="cropModal" class="modal">
   <div class="card crop-card">
     <h3 id="cropTitle">Crop Photo</h3>
-    <p class="sub">Drag the photo to move it. Use Zoom to bring the face in closer. The previews on the right are exactly how it will look on the site.</p>
+    <p class="sub">Drag the photo to move it and use Zoom. Save Crop creates the actual square image. When you reopen this editor, it will return to the exact crop you last saved.</p>
     <div class="crop-layout">
       <div class="crop-main">
         <div id="cropPreview" class="crop-preview"><canvas id="cropPreviewCanvas" width="720" height="720"></canvas><div class="crop-guide"></div></div>
@@ -192,7 +192,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
       </div>
       <div class="crop-results">
         <h4>Actual site result</h4>
-        <div class="tag">These update live while you crop.</div>
+        <div class="tag">These update live. What you see here is what Save Crop uploads.</div>
         <div class="crop-result-row">
           <div class="crop-result-box small"><img id="cropResultSmall" alt=""></div>
           <div class="crop-result-label"><strong>Rankings / Master</strong><span>58 × 58 preview</span></div>
@@ -254,10 +254,7 @@ function pvpMembers(){return activeMembers().filter(m=>!!m.photo)}
 function memberBySlug(slug){return members.find(m=>m.slug===slug)}
 function avatarHTML(m){
   if(!m.photo)return initials(m.name);
-  const x=Number.isFinite(Number(m.photoX))?Number(m.photoX):50;
-  const y=Number.isFinite(Number(m.photoY))?Number(m.photoY):50;
-  const z=Number.isFinite(Number(m.photoZoom))?Number(m.photoZoom):1;
-  return '<img src="'+esc(m.photo)+'" alt="" style="object-position:'+x+'% '+y+'%;transform:scale('+z+');transform-origin:'+x+'% '+y+'%">';
+  return '<img src="'+esc(m.photo)+'" alt="">';
 }
 function counterUrl(action,slug,readOnly,userId){
   let u='https://counterapi.com/api/'+encodeURIComponent(COUNTER_NS)+'/'+encodeURIComponent(action)+'/'+encodeURIComponent(slug);
@@ -681,9 +678,12 @@ async function adminCrop(slug){
   const m=memberBySlug(slug);if(!m||!m.photo){toast('No photo to crop.');return}
   cropTarget=m;
   el('cropTitle').textContent='Crop '+m.name;
-  el('cropX').value=Number.isFinite(Number(m.photoX))?Number(m.photoX):50;
-  el('cropY').value=Number.isFinite(Number(m.photoY))?Number(m.photoY):50;
-  el('cropZoom').value=Number.isFinite(Number(m.photoZoom))?Number(m.photoZoom):1;
+  const savedX=(m.cropX!==undefined?m.cropX:m.photoX);
+  const savedY=(m.cropY!==undefined?m.cropY:m.photoY);
+  const savedZ=(m.cropZoom!==undefined?m.cropZoom:m.photoZoom);
+  el('cropX').value=Number.isFinite(Number(savedX))?Number(savedX):50;
+  el('cropY').value=Number.isFinite(Number(savedY))?Number(savedY):50;
+  el('cropZoom').value=Number.isFinite(Number(savedZ))?Number(savedZ):1;
   el('cropModal').classList.add('show');
   try{
     await loadCropSource(m);
@@ -739,6 +739,10 @@ el('saveCropBtn').addEventListener('click',async()=>{
       const m=(data.members||[]).find(x=>x.slug===target.slug);if(!m)return false;
       if(!m.photoOriginal)m.photoOriginal=originalSource;
       m.photo=path+'?v='+version;
+      m.cropX=Number(el('cropX').value);
+      m.cropY=Number(el('cropY').value);
+      m.cropZoom=Number(el('cropZoom').value);
+      // Actual saved image is already cropped, so display it without a second CSS crop.
       m.photoX=50;m.photoY=50;m.photoZoom=1;
       return true;
     });
@@ -863,7 +867,7 @@ function adminPhotoDirect(slug){
       await putRepoFile(path,file,'Update '+m.name+' photo');
       await mutateRepoData('Use new photo for '+m.name,data=>{
         const x=data.members.find(x=>x.slug===slug);if(!x)return false;
-        x.photo=path+'?v='+Date.now();x.photoOriginal=x.photo;x.photoX=50;x.photoY=50;x.photoZoom=1;return true;
+        x.photo=path+'?v='+Date.now();x.photoOriginal=x.photo;x.photoX=50;x.photoY=50;x.photoZoom=1;x.cropX=50;x.cropY=50;x.cropZoom=1;return true;
       });
     }catch(e){toast('Photo upload failed. Check GitHub connection.')}
   };
@@ -1033,7 +1037,7 @@ async function importPhotoSheet(file){
       for(const m of data.members||[])m.photo=null;
       for(const [slug,path] of photoPaths){
         const m=(data.members||[]).find(x=>x.slug===slug);
-        if(m){m.photo=path;m.photoOriginal=path;m.photoX=50;m.photoY=50;m.photoZoom=1;}
+        if(m){m.photo=path;m.photoOriginal=path;m.photoX=50;m.photoY=50;m.photoZoom=1;m.cropX=50;m.cropY=50;m.cropZoom=1;}
       }
       return true;
     });
