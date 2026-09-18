@@ -203,7 +203,14 @@
       "name": "FROG (Evan Jung)",
       "slug": "evan-jung",
       "active": true,
-      "photo": "photos/evan-jung.jpg?v=1789767737477"
+      "photo": "photos/cropped/evan-jung.jpg?v=1789770065501",
+      "photoOriginal": "photos/evan-jung.jpg?v=1789767737477",
+      "cropX": 45,
+      "cropY": 24,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Jaden Judd",
