@@ -153,10 +153,14 @@
       "name": "Gabe Detraux",
       "slug": "gabe-detraux",
       "active": true,
-      "photo": "photos/gabe-detraux.jpg?v=1789767717951",
-      "photoX": 55,
-      "photoY": 80,
-      "photoZoom": 1
+      "photo": "photos/cropped/gabe-detraux.jpg?v=1789769584983",
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1,
+      "photoOriginal": "photos/gabe-detraux.jpg?v=1789767717951",
+      "cropX": 44,
+      "cropY": 33,
+      "cropZoom": 1
     },
     {
       "name": "Graham Resavage",
