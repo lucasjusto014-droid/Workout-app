@@ -21,6 +21,7 @@ nav{display:flex;gap:3px}nav button,.navbtn{border:0;background:transparent;colo
 .avatar{width:50px;height:50px;display:grid;place-items:center;border-radius:13px;overflow:hidden;background:linear-gradient(135deg,#30303a,#17171c);border:1px solid #3b3b44;font-size:13px;font-weight:1000}.avatar img{width:100%;height:100%;object-fit:cover}.person h3{margin:0;font-size:16px}.tag{color:#8e8e98;font-size:12px;margin-top:2px}.score{text-align:right;min-width:82px}.score strong{display:block;font-size:19px}.score small{color:var(--muted)}
 .actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.btn{border:1px solid #32323a;background:#19191e;color:#fff;border-radius:10px;padding:9px 11px;font-weight:850;transition:.15s}.btn:hover{transform:translateY(-1px);border-color:#50505b}.btn.primary{background:var(--accent);border-color:var(--accent)}.btn.good{background:#15271b;border-color:#31563b;color:#88e4a7}.btn.bad{background:#2a1517;border-color:#613036;color:#ff9a9a}.btn.super{background:#201b0d;border-color:#665620;color:#f7d75d}.btn:disabled{opacity:.7;cursor:default;transform:none}.btn.small{font-size:12px;padding:8px 10px}
 .members{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.member{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:17px;text-align:center}.member .avatar{width:66px;height:66px;margin:0 auto 10px}.member h3{margin:0;font-size:16px}.member-actions{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:11px}
+.pvp-wrap{max-width:920px;margin:0 auto}.pvp-stage{display:grid;grid-template-columns:1fr 90px 1fr;gap:16px;align-items:stretch}.pvp-card{background:linear-gradient(180deg,#17171c,#101014);border:1px solid var(--line);border-radius:20px;padding:24px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:370px;box-shadow:0 12px 40px rgba(0,0,0,.2)}.pvp-card .avatar{width:128px;height:128px;border-radius:28px;font-size:30px;margin-bottom:16px}.pvp-card h3{font-size:27px;line-height:1.05;letter-spacing:-.045em;margin:0 0 6px}.pvp-card .pvp-stats{color:var(--muted);font-size:12px;margin-bottom:17px}.pvp-card .btn{width:100%;max-width:260px;padding:13px 16px;font-size:15px}.pvp-vs{display:grid;place-items:center;font-size:27px;font-weight:1000;color:#70707a;letter-spacing:-.05em}.pvp-bottom{text-align:center;margin-top:16px}.pvp-bottom .tag{margin-bottom:10px}.pvp-leaderboard{margin-top:28px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.pvp-leaderboard h3{margin:0 0 10px}.pvp-row{display:grid;grid-template-columns:34px 1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid #25252b;align-items:center}.pvp-row:last-child{border:0}.pvp-row strong:last-child{text-align:right}
 .admin-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px}.panel h3{margin:0 0 5px;font-size:20px}.admin-list{max-height:610px;overflow:auto;margin-top:12px}.admin-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #25252b}.admin-row:last-child{border:0}.admin-row strong{display:block}.admin-row span{color:var(--muted);font-size:12px}.admin-actions{display:flex;gap:6px}
 .modal,.screen{position:fixed;inset:0;z-index:80;background:rgba(3,3,5,.84);backdrop-filter:blur(7px);display:none;place-items:center;padding:20px}.modal.show,.screen.show{display:grid}.card{width:min(580px,100%);background:#121216;border:1px solid #34343c;border-radius:20px;padding:22px;box-shadow:var(--shadow)}.card h2,.card h3{margin:0 0 5px;letter-spacing:-.04em}.card .sub{color:var(--muted);margin:0 0 18px}.formrow{margin:13px 0}.formrow label{display:block;font-size:12px;font-weight:900;margin-bottom:6px}.error{color:#ff8a84;min-height:20px;font-size:12px;font-weight:800;margin-top:8px}
 .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 10%,#251516,#0a0a0d 40%,#070709);display:grid;place-items:center;padding:20px}.gate .card{width:min(620px,100%)}.gate-logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#ff6b61,#b70d09);font-size:24px;font-weight:1000;margin-bottom:16px}
@@ -28,6 +29,7 @@ nav{display:flex;gap:3px}nav button,.navbtn{border:0;background:transparent;colo
 footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;color:#767680;font-size:11px}
 @media(max-width:880px){.rank-card{grid-template-columns:44px 48px 1fr auto}.rank-card .actions{grid-column:3/5}.members{grid-template-columns:1fr 1fr}.admin-grid{grid-template-columns:1fr}}
 @media(max-width:720px){.nav{display:block;padding:11px 0}.brand{margin-bottom:9px}.nav nav{overflow:auto}.who{position:absolute;right:14px;top:18px}.nav>.navbtn{margin-top:7px}.stats{grid-template-columns:1fr}.hero{padding-top:45px}}
+@media(max-width:700px){.pvp-stage{grid-template-columns:1fr}.pvp-vs{height:36px}.pvp-card{min-height:280px;padding:18px}.pvp-card .avatar{width:100px;height:100px}}
 @media(max-width:500px){.members{grid-template-columns:1fr}.rank-card{grid-template-columns:36px 42px 1fr auto;gap:7px;padding:9px}.avatar{width:41px;height:41px}.ranknum{font-size:19px}.score{min-width:58px}.score small{display:none}.rank-card .actions{grid-column:3/5}.card{padding:18px}}
 </style>
 </head>
@@ -54,6 +56,7 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
       <div class="brand"><div class="brandmark">PC</div> PC DOOSH RANKINGS</div>
       <nav>
         <button class="active" data-view="rankings">Rankings</button>
+        <button data-view="pvp">Doosh PvP</button>
         <button data-view="members">Members</button>
         <button id="adminTab" class="hidden" data-view="admin">Admin</button>
       </nav>
@@ -73,6 +76,24 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;text-align:center;co
       <div class="section-head"><div><h2>Official Rankings</h2><p>Score = upvotes − downvotes.</p></div><div class="status">● LIVE</div></div>
       <div class="toolbar"><input id="rankSearch" class="search" placeholder="Search a pledge…"></div>
       <div id="rankingList"></div>
+    </section>
+
+    <section id="pvp" class="view">
+      <div class="section-head"><div><h2>Doosh PvP</h2><p>Two pledges enter. Pick who is dooshier.</p></div><div class="status">HEAD-TO-HEAD</div></div>
+      <div class="pvp-wrap">
+        <div id="pvpStage" class="pvp-stage">
+          <div class="pvp-card"><div class="tag">Loading matchup…</div></div>
+        </div>
+        <div class="pvp-bottom">
+          <div class="tag">PvP is separate from the main upvote/downvote rankings.</div>
+          <button id="skipPvpBtn" class="btn small">Skip Matchup</button>
+        </div>
+        <div class="pvp-leaderboard">
+          <h3>PvP Leaders</h3>
+          <div class="tag" style="margin-bottom:8px">Most head-to-head wins.</div>
+          <div id="pvpLeaders"><div class="tag">Play some matchups to load PvP stats.</div></div>
+        </div>
+      </div>
     </section>
 
     <section id="members" class="view">
@@ -165,7 +186,7 @@ const ACCESS_ANSWERS={
  q2:['gabe','gabriel','gabe detraux','gabriel detraux'],
  q3:['ray ban cats','ray ban cats 5000','cats 5000']
 };
-let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='';
+let members=[],selectedMember=null,selectedFile=null,superTarget=null,lastPresenceBucket='',pvpPair=[],pvpBusy=false,pvpStats=new Map();
 const DEVICE_ID=localStorage.getItem('pcdr-device-id')||('dev-'+crypto.randomUUID());
 localStorage.setItem('pcdr-device-id',DEVICE_ID);
 let adminUnlocked=sessionStorage.getItem('pcdr-admin')==='1';
@@ -287,6 +308,90 @@ async function castVote(slug,dir){
     m.loaded=true;saveVoteState(state);renderRankings();renderMembers();
   }catch(e){toast('Vote change did not go through. Try again.')}
 }
+function pvpStat(slug){
+  if(!pvpStats.has(slug))pvpStats.set(slug,{wins:0,losses:0,loaded:false});
+  return pvpStats.get(slug);
+}
+async function loadPvpStat(m){
+  const s=pvpStat(m.slug);
+  if(s.loaded)return s;
+  try{
+    const [wins,losses]=await Promise.all([readCounter('pvpwin',m),readCounter('pvploss',m)]);
+    s.wins=wins;s.losses=losses;s.loaded=true;
+  }catch(e){s.loaded=true}
+  return s;
+}
+function choosePvpPair(){
+  const pool=activeMembers();
+  if(pool.length<2){pvpPair=[];renderPvp();return}
+  const lastKey=localStorage.getItem('pcdr-last-pvp-pair')||'';
+  let a,b,key,tries=0;
+  do{
+    a=pool[Math.floor(Math.random()*pool.length)];
+    do{b=pool[Math.floor(Math.random()*pool.length)]}while(b.slug===a.slug);
+    key=[a.slug,b.slug].sort().join('|');
+    tries++;
+  }while(key===lastKey&&tries<15);
+  pvpPair=[a,b];
+  localStorage.setItem('pcdr-last-pvp-pair',key);
+  renderPvp();
+  Promise.all([loadPvpStat(a),loadPvpStat(b)]).then(()=>{renderPvp();renderPvpLeaders()});
+}
+function renderPvp(){
+  const stage=el('pvpStage');if(!stage)return;
+  if(pvpPair.length!==2){stage.innerHTML='<div class="pvp-card"><div class="tag">No matchup available.</div></div>';return}
+  const a=pvpPair[0],b=pvpPair[1];
+  const card=m=>{
+    const s=pvpStat(m.slug);
+    const rec=s.loaded?(s.wins+' wins · '+s.losses+' losses'):'Loading PvP record…';
+    return '<div class="pvp-card"><div class="avatar">'+avatarHTML(m)+'</div><h3>'+esc(m.name)+'</h3><div class="pvp-stats">'+rec+'</div><button class="btn primary" '+(pvpBusy?'disabled':'')+' onclick="pickDooshier(\''+m.slug+'\')">This one is dooshier</button></div>';
+  };
+  stage.innerHTML=card(a)+'<div class="pvp-vs">VS</div>'+card(b);
+}
+async function pickDooshier(winnerSlug){
+  if(pvpBusy||pvpPair.length!==2)return;
+  const winner=pvpPair.find(m=>m.slug===winnerSlug);
+  const loser=pvpPair.find(m=>m.slug!==winnerSlug);
+  if(!winner||!loser)return;
+  pvpBusy=true;renderPvp();
+  try{
+    const [w,l]=await Promise.all([
+      fetch(counterUrl('pvpwin',winner.slug,false,DEVICE_ID),{cache:'no-store'}),
+      fetch(counterUrl('pvploss',loser.slug,false,DEVICE_ID),{cache:'no-store'})
+    ]);
+    if(!w.ok||!l.ok)throw 0;
+    const [wd,ld]=await Promise.all([w.json(),l.json()]);
+    const ws=pvpStat(winner.slug),ls=pvpStat(loser.slug);
+    ws.wins=Number(wd.value)||ws.wins+1;ws.loaded=true;
+    ls.losses=Number(ld.value)||ls.losses+1;ls.loaded=true;
+    toast(winner.name+' wins the matchup.');
+    pvpBusy=false;
+    renderPvpLeaders();
+    setTimeout(choosePvpPair,260);
+  }catch(e){
+    pvpBusy=false;renderPvp();toast('PvP vote did not go through. Try again.');
+  }
+}
+function renderPvpLeaders(){
+  const box=el('pvpLeaders');if(!box)return;
+  const loaded=activeMembers().filter(m=>pvpStat(m.slug).loaded);
+  const top=loaded.slice().sort((a,b)=>pvpStat(b.slug).wins-pvpStat(a.slug).wins||pvpStat(a.slug).losses-pvpStat(b.slug).losses||a.name.localeCompare(b.name)).slice(0,8);
+  if(!top.length){box.innerHTML='<div class="tag">Play some matchups to load PvP stats.</div>';return}
+  box.innerHTML=top.map((m,i)=>{
+    const s=pvpStat(m.slug);
+    return '<div class="pvp-row"><strong>#'+(i+1)+'</strong><span>'+esc(m.name)+'</span><strong>'+s.wins+' W</strong></div>';
+  }).join('');
+}
+async function loadPvpLeaderboard(){
+  const list=activeMembers();
+  for(let i=0;i<list.length;i+=10){
+    await Promise.all(list.slice(i,i+10).map(loadPvpStat));
+    renderPvpLeaders();
+    await new Promise(r=>setTimeout(r,60));
+  }
+}
+el('skipPvpBtn').addEventListener('click',()=>{if(!pvpBusy)choosePvpPair()});
+
 el('gateForm').addEventListener('submit',e=>{
   e.preventDefault();
   const a1=norm(el('q1').value),a2=norm(el('q2').value),a3=norm(el('q3').value);
@@ -297,13 +402,14 @@ el('gateForm').addEventListener('submit',e=>{
   if(wrong.length){el('gateError').textContent=wrong.join(', ')+' incorrect.';return}
   el('gateError').textContent='';
   sessionStorage.setItem('pcdr-access','1');el('gate').classList.add('hidden');el('app').classList.remove('hidden');
-  updateAdminUI();renderRankings();renderMembers();loadVotes();
+  updateAdminUI();renderRankings();renderMembers();loadVotes();choosePvpPair();
 });
 
 document.querySelectorAll('nav button[data-view]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));
 function go(id){
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===id));
   document.querySelectorAll('nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
+  if(id==='pvp'){if(pvpPair.length!==2)choosePvpPair();renderPvp();loadPvpLeaderboard()}
   if(id==='admin'){renderAdminRoster();refreshOnlineCount();updateGitHubStatus()}
   window.scrollTo({top:220,behavior:'smooth'});
 }
@@ -575,7 +681,7 @@ function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('show'
   if(sessionStorage.getItem('pcdr-access')==='1'){
     el('gate').classList.add('hidden');
     el('app').classList.remove('hidden');
-    renderRankings();renderMembers();loadVotes();presenceHeartbeat();
+    renderRankings();renderMembers();loadVotes();choosePvpPair();presenceHeartbeat();
     setInterval(presenceHeartbeat,20000);
   }
 })();
