@@ -22,7 +22,14 @@
       "name": "Jackson Gerardi",
       "slug": "jackson-gerardi",
       "active": true,
-      "photo": "photos/jackson-gerardi.jpg?v=1789767771129"
+      "photo": "photos/cropped/jackson-gerardi.jpg?v=1789772028613",
+      "photoOriginal": "photos/jackson-gerardi.jpg?v=1789767771129",
+      "cropX": 57,
+      "cropY": 64,
+      "cropZoom": 1,
+      "photoX": 50,
+      "photoY": 50,
+      "photoZoom": 1
     },
     {
       "name": "Jacob Webb",
