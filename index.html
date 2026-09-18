@@ -580,7 +580,34 @@ async function mutateRepoData(message,mutator){
     const changed=await mutator(latest.data);
     if(changed===false)return false;
     await saveRepoData(latest.data,latest.sha,message);
-    await loadRoster();renderRankings();renderMembers();renderAdminRoster();loadVotes();
+
+    // Use the data we just committed immediately. Do NOT reload data.json from
+    // GitHub Pages here because Pages may still be serving the previous deploy.
+    const previousBySlug=new Map(members.map(m=>[m.slug,m]));
+    members=(latest.data.members||[]).map(m=>{
+      const prev=previousBySlug.get(m.slug)||{};
+      return {
+        ...m,
+        adminAdjustment:Number(m.adminAdjustment||0),
+        rankOverride:Number(m.rankOverride||0),
+        upOffset:Number(m.upOffset||0),
+        downOffset:Number(m.downOffset||0),
+        up:Number(prev.up||0),
+        down:Number(prev.down||0),
+        upUndo:Number(prev.upUndo||0),
+        downUndo:Number(prev.downUndo||0),
+        loaded:!!prev.loaded
+      };
+    });
+
+    renderRankings();
+    renderMembers();
+    renderAdminRoster();
+    if(el('pvp')&&el('pvp').classList.contains('active')){
+      pvpQueue=[];
+      choosePvpPair();
+      renderPvpLeaders();
+    }
     toast('Saved.');
     return true;
   }catch(e){
@@ -675,11 +702,15 @@ el('resetCropBtn').addEventListener('click',()=>{
 el('cancelCropBtn').addEventListener('click',()=>{el('cropModal').classList.remove('show');cropTarget=null});
 el('saveCropBtn').addEventListener('click',async()=>{
   if(!cropTarget)return;
+  const btn=el('saveCropBtn');
+  const original=btn.textContent;
+  btn.disabled=true;btn.textContent='Saving…';
   const slug=cropTarget.slug,x=Number(el('cropX').value),y=Number(el('cropY').value),z=Number(el('cropZoom').value);
   const ok=await mutateRepoData('Crop '+cropTarget.name+' photo',data=>{
     const m=(data.members||[]).find(xm=>xm.slug===slug);if(!m)return false;
     m.photoX=x;m.photoY=y;m.photoZoom=z;return true;
   });
+  btn.disabled=false;btn.textContent=original;
   if(ok){el('cropModal').classList.remove('show');cropTarget=null}
 });
 
