@@ -7,20 +7,14 @@
       "photo": null
     },
     {
-      "name": "Tyler",
+      "name": "Tyler Crawford",
       "slug": "tyler",
       "active": true,
       "photo": null
     },
     {
-      "name": "Connor colon",
+      "name": "Conor Colon",
       "slug": "connor-colon",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Nolan Hart",
-      "slug": "nolan-hart",
       "active": true,
       "photo": null
     },
@@ -43,19 +37,7 @@
       "photo": null
     },
     {
-      "name": "Cole Kaplan",
-      "slug": "cole-kaplan",
-      "active": false,
-      "photo": null
-    },
-    {
-      "name": "Harrison Satre",
-      "slug": "harrison-satre",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Jake wells",
+      "name": "Jake Wells",
       "slug": "jake-wells",
       "active": true,
       "photo": null
@@ -63,12 +45,6 @@
     {
       "name": "Alex Batista",
       "slug": "alex-batista",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Ethan Follick",
-      "slug": "ethan-follick",
       "active": true,
       "photo": null
     },
@@ -91,7 +67,7 @@
       "photo": null
     },
     {
-      "name": "Taryn Nachtrieb",
+      "name": "Taryn N",
       "slug": "taryn-nachtrieb",
       "active": true,
       "photo": null
@@ -127,12 +103,6 @@
       "photo": null
     },
     {
-      "name": "Karsten Richey",
-      "slug": "karsten-richey",
-      "active": false,
-      "photo": null
-    },
-    {
       "name": "Marco Alberni",
       "slug": "marco-alberni",
       "active": true,
@@ -145,7 +115,7 @@
       "photo": null
     },
     {
-      "name": "Emiliano Sierra",
+      "name": "Emi Sierra",
       "slug": "emiliano-sierra",
       "active": true,
       "photo": null
@@ -157,7 +127,7 @@
       "photo": null
     },
     {
-      "name": "Matias",
+      "name": "Matias Espina",
       "slug": "matias",
       "active": true,
       "photo": null
@@ -171,12 +141,6 @@
     {
       "name": "Graham Resavage",
       "slug": "graham-resavage",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Corey Shook",
-      "slug": "corey-shook",
       "active": true,
       "photo": null
     },
@@ -205,31 +169,25 @@
       "photo": null
     },
     {
-      "name": "Adrian Fonseca",
+      "name": "AJ Fonseca",
       "slug": "adrian-fonseca",
       "active": true,
       "photo": null
     },
     {
-      "name": "Jordan cross",
+      "name": "Jordan Cross",
       "slug": "jordan-cross",
       "active": true,
       "photo": null
     },
     {
-      "name": "Carson Long",
-      "slug": "carson-long",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Louis DiStefano",
+      "name": "Louis Di Stefano",
       "slug": "louis-distefano",
       "active": true,
       "photo": null
     },
     {
-      "name": "Spencer kern",
+      "name": "Spencer Kern",
       "slug": "spencer-kern",
       "active": true,
       "photo": null
@@ -247,13 +205,7 @@
       "photo": null
     },
     {
-      "name": "Dawson Ivan",
-      "slug": "dawson-ivan",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Evan kass",
+      "name": "Evan Kass",
       "slug": "evan-kass",
       "active": true,
       "photo": null
@@ -271,7 +223,7 @@
       "photo": null
     },
     {
-      "name": "maksym zherukha",
+      "name": "Maksym Zheruka",
       "slug": "maksym-zherukha",
       "active": true,
       "photo": null
@@ -283,13 +235,7 @@
       "photo": null
     },
     {
-      "name": "Carter Jaye",
-      "slug": "carter-jaye",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Seb Russell",
+      "name": "Seb Russel",
       "slug": "seb-russell",
       "active": true,
       "photo": null
@@ -343,25 +289,19 @@
       "photo": null
     },
     {
-      "name": "Dylan Vertesch",
-      "slug": "dylan-vertesch",
-      "active": true,
-      "photo": null
-    },
-    {
-      "name": "Sebastian Betancourt",
+      "name": "Sebby Bennancourt",
       "slug": "sebastian-betancourt",
       "active": true,
       "photo": null
     },
     {
-      "name": "Theo Jauregui",
+      "name": "Theo Jauregi",
       "slug": "theo-jauregui",
       "active": true,
       "photo": null
     },
     {
-      "name": "Sean Vasquez",
+      "name": "Sean Vazquez",
       "slug": "sean-vasquez",
       "active": true,
       "photo": null
@@ -385,12 +325,6 @@
       "photo": null
     },
     {
-      "name": "Greyson Sanders",
-      "slug": "greyson-sanders",
-      "active": true,
-      "photo": null
-    },
-    {
       "name": "Kai Gordon",
       "slug": "kai-gordon",
       "active": true,
@@ -401,6 +335,96 @@
       "slug": "grant-kessler",
       "active": true,
       "photo": null
+    },
+    {
+      "name": "Griffin Kuhlman",
+      "slug": "griffin-kuhlman",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Dax Marzano",
+      "slug": "dax-marzano",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Rhys Gallant",
+      "slug": "rhys-gallant",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Baxly H",
+      "slug": "baxly-h",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Amir Valizedah",
+      "slug": "amir-valizedah",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Sam Atwater",
+      "slug": "sam-atwater",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Henry Cravens",
+      "slug": "henry-cravens",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Collin Mulluloy",
+      "slug": "collin-mulluloy",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
+    },
+    {
+      "name": "Jimmy Wehrell",
+      "slug": "jimmy-wehrell",
+      "active": true,
+      "photo": null,
+      "rankOverride": 0,
+      "adminAdjustment": 0,
+      "upOffset": 0,
+      "downOffset": 0
     }
   ]
 }
